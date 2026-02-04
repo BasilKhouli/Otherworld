@@ -2,7 +2,7 @@ package me.basil.otherworld.components;
 
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import me.basil.otherworld.character.abilities.Ability;
+import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
 
 import javax.annotation.Nonnull;
