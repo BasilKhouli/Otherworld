@@ -1,4 +1,9 @@
 package me.basil.otherworld.character.races.vampire.abilities;
 
-public class BatForm {
+import me.basil.otherworld.character.races.Ability;
+
+public class BatForm extends Ability {
+    public BatForm() {
+        super("BatForm");
+    }
 }
