@@ -3,6 +3,8 @@ package me.basil.otherworld.character.races.vampire;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.protocol.SavedMovementStates;
+import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
@@ -10,6 +12,10 @@ import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementMa
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.player.PlayerSkinComponent;
+import com.hypixel.hytale.server.core.modules.entity.stamina.StaminaModule;
+import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
+import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
+import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.entitystats.modifier.Modifier;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -50,17 +56,49 @@ public class Vampire extends Race {
     @Override
     public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer) {
 
+        flightLogic(deltaTime,ref,playerRef,store,commandBuffer);
 
-        //Flight Logic
+        //TODO: add darkSight
+
+
+
+
+
+
+
+
+
+    }
+
+    private void flightLogic(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
         MovementManager movementManager = store.getComponent(ref, MovementManager.getComponentType());
         assert movementManager != null; // if any asserts throw an exception there's prob something wrong but u can also just replace with an if (==null) {return}
         MovementStatesComponent movementStatesComponent = store.getComponent(ref, MovementStatesComponent.getComponentType());
         assert  movementStatesComponent != null;
+        EntityStatMap statMap = store.getComponent(ref, EntityStatMap.getComponentType());
+        assert statMap != null;
+        int staminaRegenDelayIndex = store.getResource(StaminaModule.get().getSprintRegenDelayResourceType()).getIndex();
+        EntityStatValue currentStamina = statMap.get(DefaultEntityStatTypes.getStamina());
+        assert currentStamina != null;
+        final float staminaDrainRate = 2f; //stamina drained per second while flying
+        final float staminaRegenDisableTime = 1f; //time after flying stops before regen can start
+        final float thisFramesStaminaDrain = staminaDrainRate * deltaTime;
 
-        movementManager.getSettings().canFly = true;
+
+
+        if (currentStamina.get() < thisFramesStaminaDrain){
+            //force stop flying
+            playerRef.getPacketHandler().writeNoCache(new SetMovementStates(new SavedMovementStates(false))); //sends packet to client to stop flying
+            movementStatesComponent.getMovementStates().flying = false;
+            movementManager.getSettings().canFly = false;
+        }
+        else {
+            movementManager.getSettings().canFly = true;
+        }
 
 
         if (movementStatesComponent.getMovementStates().flying){
+
             if (!isInFlight){
                 isInFlight = true;
                 ModelComponent modelComponent = store.getComponent(ref, ModelComponent.getComponentType());
@@ -74,11 +112,12 @@ public class Vampire extends Race {
                     commandBuffer.replaceComponent(ref,ModelComponent.getComponentType(),newModelComp);
                     //playerRef.sendMessage(Message.raw(modelComponent.getModel().toString()));
                 }
-
-
-
-
             }
+            //Drains Stamina
+            statMap.setStatValue(staminaRegenDelayIndex,-staminaRegenDisableTime); //prevents stamina regen
+            float newStamina = currentStamina.get() - thisFramesStaminaDrain;
+            statMap.setStatValue(DefaultEntityStatTypes.getStamina(),newStamina);
+
 
         }
         else {
@@ -95,15 +134,7 @@ public class Vampire extends Race {
             }
         }
 
-
-        //TODO: add darkSight maybe also separate these passives into their own methods which this calls
-
-
-
-
-
-
-
         movementManager.update(playerRef.getPacketHandler());
     }
+
 }
