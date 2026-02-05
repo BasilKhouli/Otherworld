@@ -36,7 +36,6 @@ public class Main extends JavaPlugin {
         EventRegistry er = this.getEventRegistry();
         OWDcomponentType = eSR.registerComponent(OtherworldData.class,"OtherworldData",OtherworldData.CODEC);
 
-
         eSR.registerSystem(new RaceSystem());
 
         er.registerGlobal(PlayerReadyEvent.class, this::onPlayerReady);

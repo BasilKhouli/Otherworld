@@ -3,6 +3,7 @@ package me.basil.otherworld.character.races.vampire;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.SavedMovementStates;
 import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
 import com.hypixel.hytale.server.core.Message;
@@ -10,7 +11,9 @@ import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
+import com.hypixel.hytale.server.core.io.PacketHandler;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entity.player.PlayerSkinComponent;
 import com.hypixel.hytale.server.core.modules.entity.stamina.StaminaModule;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
@@ -18,7 +21,12 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.entitystats.modifier.Modifier;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.World;
+import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockSection;
+import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
 import org.jspecify.annotations.NonNull;
@@ -56,14 +64,28 @@ public class Vampire extends Race {
     @Override
     public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer) {
 
+
+
         flightLogic(deltaTime,ref,playerRef,store,commandBuffer);
-
-        //TODO: add darkSight
-
-
+        burnInDaLaight(deltaTime,ref,playerRef,store,commandBuffer);
+        darkSightLogic(deltaTime,ref,playerRef,store,commandBuffer);
 
 
 
+
+
+
+
+
+
+
+
+
+    }
+
+    private void burnInDaLaight(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
+
+        //TODO Figure out how to check if player is in sunlight;
 
 
 
@@ -137,4 +159,13 @@ public class Vampire extends Race {
         movementManager.update(playerRef.getPacketHandler());
     }
 
+    private void darkSightLogic(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
+        //TODO Implement Dark Sight
+        PacketHandler handler = playerRef.getPacketHandler();
+        Channel channel = handler.getChannel();
+        //TODO Add a ChannelOutboundHandlerAdapter to modify outgoing packets to give full bright effect;
+
+
+    }
 }
+
