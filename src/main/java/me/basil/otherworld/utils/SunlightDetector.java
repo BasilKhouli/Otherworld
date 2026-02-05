@@ -10,7 +10,10 @@ import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.BlockChunk;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockSection;
+import com.hypixel.hytale.server.core.universe.world.chunk.section.ChunkLightData;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.spawning.util.LightRangePredicate;
 
 import javax.annotation.Nullable;
 
@@ -28,10 +31,14 @@ public class SunlightDetector {
         if (data == null) {
             return false;
         }
+        return data.sunlightLevel >= minSunlightLevel;
 
+        /*
         return data.skyLight >= minSkyLight
                 && data.sunlightFactor > minSunlightFactor
                 && data.sunlightLevel >= minSunlightLevel;
+
+         */
     }
 
     @Nullable
@@ -61,7 +68,13 @@ public class SunlightDetector {
             return null;
         }
 
-        byte skyLight = blockChunk.getSkyLight(x, y, z);
+
+        BlockSection blockSection = blockChunk.getSectionAtBlockY(y);
+        ChunkLightData globalLight = blockSection.getGlobalLight();
+
+
+        //byte skyLight = blockChunk.getSkyLight(x, y, z);
+        byte skyLight = globalLight.getSkyLight(x, y, z);
 
         WorldTimeResource worldTime = store.getResource(WorldTimeResource.getResourceType());
         if (worldTime == null) {

@@ -22,6 +22,7 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.entitystats.modifier.Modifier;
+import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import io.netty.channel.Channel;
@@ -96,7 +97,10 @@ public class Vampire extends Race {
             return;
         }
 
+
+
         if (isExposedToSunlight) {
+
             if (!wasInSunlightLastTick) {
                 EntityEffect burnEffect = EntityEffect.getAssetMap().getAsset(SUNLIGHT_BURN_EFFECT_ID);
 
@@ -118,6 +122,8 @@ public class Vampire extends Race {
                 wasInSunlightLastTick = false;
             }
         }
+        WorldTimeResource worldTime = store.getResource(WorldTimeResource.getResourceType());
+
     }
 
     private void flightLogic(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
