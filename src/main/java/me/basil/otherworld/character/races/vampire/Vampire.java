@@ -3,17 +3,18 @@ package me.basil.otherworld.character.races.vampire;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.SavedMovementStates;
 import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
-import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.asset.type.entityeffect.config.EntityEffect;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
+import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
 import com.hypixel.hytale.server.core.io.PacketHandler;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
-import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.entity.damage.Damage;
+import com.hypixel.hytale.server.core.modules.entity.damage.DamageCause;
 import com.hypixel.hytale.server.core.modules.entity.player.PlayerSkinComponent;
 import com.hypixel.hytale.server.core.modules.entity.stamina.StaminaModule;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
@@ -21,14 +22,11 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.entitystats.modifier.Modifier;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockSection;
-import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
+import me.basil.otherworld.utils.SunlightDetector;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -59,6 +57,10 @@ public class Vampire extends Race {
         return new Vampire();
     }
 
+
+    private static final String SUNLIGHT_BURN_EFFECT_ID = "Sunlight_Burn";
+    private boolean wasInSunlightLastTick = false;
+
     private boolean isInFlight;
     private Model playerModel;
     @Override
@@ -67,8 +69,8 @@ public class Vampire extends Race {
 
 
         flightLogic(deltaTime,ref,playerRef,store,commandBuffer);
-        burnInDaLaight(deltaTime,ref,playerRef,store,commandBuffer);
-        darkSightLogic(deltaTime,ref,playerRef,store,commandBuffer);
+        burnInSunlight(deltaTime,ref,playerRef,store,commandBuffer);
+        darkVisionLogic(deltaTime,ref,playerRef,store,commandBuffer);
 
 
 
@@ -83,13 +85,38 @@ public class Vampire extends Race {
 
     }
 
-    private void burnInDaLaight(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
+    private void burnInSunlight(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
 
-        //TODO Figure out how to check if player is in sunlight;
+        boolean isExposedToSunlight = SunlightDetector.isExposedToSunlight(ref, store);
 
+        EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
 
+        if (effectController == null) {
+            return;
+        }
 
+        if (isExposedToSunlight) {
+            if (!wasInSunlightLastTick) {
+                EntityEffect burnEffect = EntityEffect.getAssetMap().getAsset(SUNLIGHT_BURN_EFFECT_ID);
 
+                if (burnEffect != null) {
+                    effectController.addEffect(ref, burnEffect, store);
+                }
+
+                wasInSunlightLastTick = true;
+            }
+
+        } else {
+            if (wasInSunlightLastTick) {
+                int effectIndex = EntityEffect.getAssetMap().getIndex(SUNLIGHT_BURN_EFFECT_ID);
+
+                if (effectIndex != Integer.MIN_VALUE) {
+                    effectController.removeEffect(ref, effectIndex, store);
+                }
+
+                wasInSunlightLastTick = false;
+            }
+        }
     }
 
     private void flightLogic(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
@@ -159,7 +186,7 @@ public class Vampire extends Race {
         movementManager.update(playerRef.getPacketHandler());
     }
 
-    private void darkSightLogic(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
+    private void darkVisionLogic(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
         //TODO Implement Dark Sight
         PacketHandler handler = playerRef.getPacketHandler();
         Channel channel = handler.getChannel();
