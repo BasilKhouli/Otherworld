@@ -159,7 +159,7 @@ public class Vampire extends Race {
                 ModelComponent modelComponent = store.getComponent(ref, ModelComponent.getComponentType());
                 assert modelComponent != null;
 
-                ModelAsset batAsset = ModelAsset.getAssetMap().getAsset("Bat");
+                ModelAsset batAsset = ModelAsset.getAssetMap().getAsset("Vampire_Bat");
                 if (batAsset != null){
                     playerModel = modelComponent.getModel();
                     Model batModel = Model.createScaledModel(batAsset,batAsset.getMinScale());
