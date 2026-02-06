@@ -122,7 +122,6 @@ public class Vampire extends Race {
                 wasInSunlightLastTick = false;
             }
         }
-        WorldTimeResource worldTime = store.getResource(WorldTimeResource.getResourceType());
 
     }
 
@@ -163,7 +162,7 @@ public class Vampire extends Race {
                 ModelAsset batAsset = ModelAsset.getAssetMap().getAsset("Bat");
                 if (batAsset != null){
                     playerModel = modelComponent.getModel();
-                    Model batModel = Model.createScaledModel(batAsset,1);
+                    Model batModel = Model.createScaledModel(batAsset,batAsset.getMinScale());
                     ModelComponent newModelComp = new ModelComponent(batModel);
                     commandBuffer.replaceComponent(ref,ModelComponent.getComponentType(),newModelComp);
                     //playerRef.sendMessage(Message.raw(modelComponent.getModel().toString()));
