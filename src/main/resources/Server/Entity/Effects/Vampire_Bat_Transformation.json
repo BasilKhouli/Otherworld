@@ -1,0 +1,14 @@
+{
+  "ModelChange": "Vampire_Bat",
+  "ApplicationEffects": {
+    "AbilityEffects": {
+      "Disabled": [
+        "Primary",
+        "Secondary",
+        "Ability1",
+        "Use",
+        "Pickup"
+      ]
+    }
+  }
+}

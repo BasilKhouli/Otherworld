@@ -1,0 +1,14 @@
+{
+  "DamageResistance": {
+    "Fall": [
+      {
+        "Target": "Max",
+        "CalculationType": "Multiplicative",
+        "Amount": 1000
+      }
+    ]
+  },
+  "Infinite": true,
+  "OverlapBehavior": "Extend",
+  "Invulnerable": false
+}

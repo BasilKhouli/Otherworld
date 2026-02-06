@@ -447,10 +447,9 @@
   "Trails": [
     {
       "TrailId": {
-        "Parent": "Daggers_Dash_Dark",
         "Start": {
           "Color": "#ff0000ff",
-          "Width": 0.1
+          "Width": 0.3
         },
         "End": {
           "Width": 1,
@@ -458,11 +457,17 @@
         },
         "Smooth": false,
         "RenderMode": "BlendLinear",
-        "LightInfluence": 0.444,
+        "LightInfluence": 1,
         "IntersectionHighlight": {
           "HighlightThreshold": 0
         },
-        "LifeSpan": 20
+        "LifeSpan": 50,
+        "TexturePath": "Trails/Acid.png"
+      },
+      "FixedRotation": false,
+      "TargetEntityPart": "Self",
+      "PositionOffset": {
+        "Y": 0.5
       }
     }
   ],

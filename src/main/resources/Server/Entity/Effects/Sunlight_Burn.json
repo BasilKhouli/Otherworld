@@ -1,7 +1,7 @@
 {
   "ApplicationEffects": {
     "EntityBottomTint": "#100600",
-    "EntityTopTint": "#ff4400",
+    "EntityTopTint": "#cf2302",
     "ScreenEffect": "ScreenEffects/Fire.png",
     "WorldSoundEventId": "SFX_Effect_Burn_World",
     "LocalSoundEventId": "SFX_Effect_Burn_Local",
@@ -12,19 +12,18 @@
     ],
     "ModelVFXId": "Burn"
   },
-  "DamageCalculatorCooldown": 1,
+  "DamageCalculatorCooldown": 0.2,
   "DamageCalculator": {
     "BaseDamage": {
-      "Environment": 1
+      "Fire": 2
     }
   },
   "DamageEffects": {
     "WorldSoundEventId": "SFX_Effect_Burn_World",
     "PlayerSoundEventId": "SFX_Effect_Burn_Local"
   },
-  "OverlapBehavior": "Refresh",
+  "OverlapBehavior": "Overwrite",
   "Infinite": true,
   "Debuff": true,
-  "StatusEffectIcon": "UI/StatusEffects/Burn.png",
-  "Duration": 999999
+  "StatusEffectIcon": "UI/StatusEffects/Burn.png"
 }

@@ -2,9 +2,12 @@ package me.basil.otherworld.utils;
 
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.function.predicate.TriIntObjPredicate;
+import com.hypixel.hytale.math.block.BlockCubeUtil;
 import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.util.MathUtil;
 import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -50,8 +53,9 @@ public class SimpleSunlightDetector {
         int startY = MathUtil.floor(position.getY()) + 1;
         int z = MathUtil.floor(position.getZ());
 
-        for (int y = startY; y < startY + CHECK_HEIGHT && y < 320; y++) {
-            WorldChunk chunk = world.getChunkIfInMemory(ChunkUtil.indexChunkFromBlock(x, z));
+
+        TriIntObjPredicate<World> isAllAir = (bx, by, bz, w) -> {
+            WorldChunk chunk = w.getChunkIfInMemory(ChunkUtil.indexChunkFromBlock(bx, bz));
             if (chunk == null) {
                 return false;
             }
@@ -61,14 +65,15 @@ public class SimpleSunlightDetector {
                 return false;
             }
 
-            int blockId = blockChunk.getBlock(x & 31, y, z & 31);
+            int blockId = blockChunk.getBlock(bx & 31, by, bz & 31);
 
             if (blockId != 0) {
                 return false;
             }
-        }
+            return true;
+        };
 
-        return true;
+        return BlockCubeUtil.forEachBlock(new Vector3i(x,startY,z), new Vector3i(x, Math.min(startY + CHECK_HEIGHT - 1, 319), z), world, isAllAir);
     }
 
     public static double getSunlightFactor(Store<EntityStore> store) {
