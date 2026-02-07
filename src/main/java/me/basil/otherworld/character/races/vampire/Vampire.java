@@ -40,6 +40,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
+import me.basil.otherworld.character.races.vampire.abilities.Drain;
 import me.basil.otherworld.utils.SimpleSunlightDetector;
 import org.jspecify.annotations.NonNull;
 
@@ -53,6 +54,7 @@ public class Vampire extends Race {
     public Vampire( ) {
 
         List<Ability> raceAbilities = List.of(
+                new Drain()
 
                 //TODO
 
@@ -63,7 +65,8 @@ public class Vampire extends Race {
         );
 
 
-        super("Vampire", raceAbilities, raceModifiers);
+        super("Vampire", raceAbilities, raceModifiers,null);
+
     }
 
 
@@ -94,23 +97,21 @@ public class Vampire extends Race {
             for (SyncInteractionChain packet : packets) {//Mostly for debug all will be replaced with proper ways to set later
                 if (packet.interactionType == InteractionType.Use && packet.initial){
 
-                    hasDarkVision = !hasDarkVision;
-                    String outString = hasDarkVision ? "Enabled" : "Disabled";
                     HeadRotation headRotation = store.getComponent(ref, HeadRotation.getComponentType());
                     assert headRotation != null;
                     Vector3f rotation = headRotation.getRotation();
                     float pitch = rotation.x;
                     float normalizedPitch = (pitch + (float)Math.PI/2) / (float)Math.PI;
-                    playerRef.sendMessage(Message.raw(String.valueOf(pitch)));
 
-                    brightnessLevel = (int) (normalizedPitch * 15f) ;
-                    playerRef.sendMessage(Message.raw(String.valueOf(brightnessLevel)));
+                    brightnessLevel = (int) (normalizedPitch * 15f);
+                    hasDarkVision = brightnessLevel > 3;
 
-                    //playerRef.sendMessage(Message.raw("Dark Vision: " + outString));
+
                     EventTitleUtil.hideEventTitleFromPlayer(playerRef, 0);
-
+                    String outString = hasDarkVision ? "Enabled" : "Disabled";
                     EventTitleUtil.showEventTitleToPlayer(playerRef,Message.raw(outString),Message.raw("Dark Vision:"),false,null,2,0,1);
                     reloadChunks(playerRef);
+                    break;
                 }
                 //playerRef.sendMessage(Message.raw("Packet: " + packet.getClass().getSimpleName()));
             }
@@ -271,7 +272,7 @@ public class Vampire extends Race {
         movementManager.update(playerRef.getPacketHandler());
     }
 
-    boolean hasDarkVision = true;
+    boolean hasDarkVision = false;
 
     @Override
     public void initialize(PlayerRef playerRef) {

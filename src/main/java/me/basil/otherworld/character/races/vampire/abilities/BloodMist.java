@@ -1,4 +1,7 @@
 package me.basil.otherworld.character.races.vampire.abilities;
 
+import me.basil.otherworld.character.races.Ability;
+
 public class BloodMist {
+
 }

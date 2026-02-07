@@ -8,6 +8,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.jspecify.annotations.NonNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,23 +16,33 @@ import java.util.Map;
 public abstract class Race {
     private final String name; // technically better practice for this to be private with a getter so changed it to that but does not matter IG
     private final Map<String,Ability> abilities = new HashMap<>();
-    protected final Map<String, Modifier> modifiers;
+    private final Map<String, Modifier> modifiers;
+    public Ability[] defaultEquippedAbilities;
 
 
-    public Race(String raceName, List<Ability> raceAbilities, Map<String, Modifier> raceModifiers) {
-        this.name = raceName;
+    public Race(String raceName, List<Ability> raceAbilities, Map<String, Modifier> raceModifiers, Ability[] raceDefaultEquippedAbilities) {
+        name = raceName;
 
         for (Ability ability : raceAbilities) {
             registerAbility(ability);
         }
         modifiers = raceModifiers;
+        defaultEquippedAbilities = raceDefaultEquippedAbilities;
+        if (defaultEquippedAbilities == null) {
+            defaultEquippedAbilities = new Ability[9];
+            List<Ability> listOfAbilities = abilities.values().stream().toList();
+            int abilitiesPossibleToEquip = Math.min(listOfAbilities.size(), defaultEquippedAbilities.length);
+            for (int i = 0; i < abilitiesPossibleToEquip; i++) {
+                defaultEquippedAbilities[i] = listOfAbilities.get(i);
+            }
+        }
+
     }
 
 
     public String getName() {
         return name;
     }
-
 
     abstract public Race clone();
 
