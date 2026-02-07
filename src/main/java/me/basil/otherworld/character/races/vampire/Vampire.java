@@ -5,10 +5,7 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
-import com.hypixel.hytale.protocol.CachedPacket;
-import com.hypixel.hytale.protocol.InteractionType;
-import com.hypixel.hytale.protocol.Packet;
-import com.hypixel.hytale.protocol.SavedMovementStates;
+import com.hypixel.hytale.protocol.*;
 import com.hypixel.hytale.protocol.packets.interaction.SyncInteractionChain;
 import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
 import com.hypixel.hytale.protocol.packets.world.SetChunk;
@@ -27,6 +24,7 @@ import com.hypixel.hytale.server.core.modules.entity.stamina.StaminaModule;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
+import com.hypixel.hytale.server.core.modules.entitystats.asset.EntityStatType;
 import com.hypixel.hytale.server.core.modules.entitystats.modifier.Modifier;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -174,7 +172,7 @@ public class Vampire extends Race {
         assert  movementStatesComponent != null;
         EntityStatMap statMap = store.getComponent(ref, EntityStatMap.getComponentType());
         assert statMap != null;
-        int staminaRegenDelayIndex = store.getResource(StaminaModule.get().getSprintRegenDelayResourceType()).getIndex();
+        int staminaRegenDelayIndex = EntityStatType.getAssetMap().getIndex("StaminaRegenDelay");
         EntityStatValue currentStamina = statMap.get(DefaultEntityStatTypes.getStamina());
         assert currentStamina != null;
         final float staminaDrainRate = 2f; //stamina drained per second while flying

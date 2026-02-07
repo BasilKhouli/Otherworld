@@ -9,6 +9,7 @@ import com.hypixel.hytale.server.core.modules.entity.damage.DamageCause;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageSystems;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
+import com.hypixel.hytale.server.core.modules.entitystats.asset.EntityStatType;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
@@ -26,41 +27,70 @@ public class Drain extends Ability {
         movementStatesComponent = store.getComponent(ref,MovementStatesComponent.getComponentType());
     }
 
+    float cooldown = 0;
     boolean wasCrouched = false;
     @Override
     public void selectedTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer) {
+        final float attackCooldown = 0.4f;
+
         boolean currentCrouched = movementStatesComponent.getMovementStates().crouching;
-        if (currentCrouched && !wasCrouched) {
-            Ref<EntityStore> targetRef = TargetUtil.getTargetEntity(ref, commandBuffer);
-            if (targetRef != null && targetRef.isValid()) {
-                // Create a source identifying the attacker (the player using Drain)
-                Damage.EntitySource source = new Damage.EntitySource(ref);
-                DamageCause cause = DamageCause.getAssetMap().getAsset("Command");
 
-                if  (cause != null) {
-                    Damage damage = new Damage(source, cause, 5.0f);
+        if (cooldown>0){// if tick lags multiple runs of the tick logic may take place but cooldown still rests at 0 if not in active use
+            cooldown -= deltaTime;
+        } else if (cooldown<0) {
+            cooldown = 0;
+        }
 
 
-                    DamageSystems.executeDamage(targetRef, commandBuffer, damage);
+        if (currentCrouched){
+            for (int i = 0;i< (cooldown/-attackCooldown)+1;i++){
 
-                    float damageDone = damage.getAmount();
-                    if (damageDone > 0){
-                        float heal = Math.max(damageDone * 0.40f,0.5f);
+                Ref<EntityStore> targetRef = TargetUtil.getTargetEntity(ref, commandBuffer);
+                if (targetRef != null && targetRef.isValid()) {
+                    // Create a source identifying the attacker (the player using Drain)
+                    Damage.EntitySource source = new Damage.EntitySource(ref);
+                    DamageCause cause = DamageCause.getAssetMap().getAsset("Command");
 
-                        EntityStatMap statMap = commandBuffer.getComponent(ref, EntityStatMap.getComponentType());
-                        if (statMap != null) {
-                            int healthIndex = DefaultEntityStatTypes.getHealth();
-                            statMap.addStatValue(healthIndex, heal);
+                    if  (cause != null) {
+                        Damage damage = new Damage(source, cause, 0.5f);
+                        DamageSystems.executeDamage(targetRef, commandBuffer, damage);
+                        EntityStatMap targetStatMap = store.getComponent(targetRef,EntityStatMap.getComponentType());
+                        if (targetStatMap != null) {
                             int staminaIndex = DefaultEntityStatTypes.getStamina();
-                            statMap.addStatValue(staminaIndex, heal*2);
+                            targetStatMap.subtractStatValue(staminaIndex, 2f);
+                            int staminaRDIndex = EntityStatType.getAssetMap().getIndex("StaminaRegenDelay");
+                            targetStatMap.subtractStatValue(staminaIndex, 2f);
+                        }
+
+
+
+
+                        float damageDone = damage.getAmount();
+                        if (damageDone > 0){
+                            float heal = damageDone * 0.40f;
+
+                            EntityStatMap statMap = commandBuffer.getComponent(ref, EntityStatMap.getComponentType());
+                            if (statMap != null) {
+                                int healthIndex = DefaultEntityStatTypes.getHealth();
+                                statMap.addStatValue(healthIndex, heal);
+                                int staminaIndex = DefaultEntityStatTypes.getStamina();
+                                statMap.addStatValue(staminaIndex, heal*2);
+                            }
+
                         }
 
                     }
 
                 }
 
+                cooldown += attackCooldown;
             }
         }
+
+
+
+
+
         wasCrouched = currentCrouched;
     }
 
@@ -72,7 +102,11 @@ public class Drain extends Ability {
 
     @Override
     public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer) {
-
+        if (cooldown>0){
+            cooldown -= deltaTime;
+        } else if (cooldown<0) {
+            cooldown = 0;
+        }
     }
 
     @Override
