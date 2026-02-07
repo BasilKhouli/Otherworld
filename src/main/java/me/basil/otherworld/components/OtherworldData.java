@@ -1,7 +1,5 @@
 package me.basil.otherworld.components;
 
-import com.hypixel.hytale.codec.Codec;
-import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -33,7 +31,7 @@ public class OtherworldData implements Component<EntityStore> {
         }
 
         if(race != null){
-            race.initalize(playerRef);
+            race.initialize(playerRef);
         }
 
 

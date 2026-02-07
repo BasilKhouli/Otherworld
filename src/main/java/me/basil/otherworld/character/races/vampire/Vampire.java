@@ -137,7 +137,7 @@ public class Vampire extends Race {
 
         ItemStack helmet = player.getInventory().getArmor().getItemStack((short) 0);
 
-        boolean isExposedToSunlight = SimpleSunlightDetector.isExposedToSunlight(ref,store) && SimpleSunlightDetector.isDaytime(store) && (helmet == null || helmet.isEmpty()); //SunlightDetector.isExposedToSunlight(ref, store);
+        boolean isExposedToSunlight = SimpleSunlightDetector.isExposedToSunlight(ref,store) && (helmet == null || helmet.isEmpty()); //SunlightDetector.isExposedToSunlight(ref, store);
         if (isExposedToSunlight) {
 
             if (!wasInSunlightLastTick) {
@@ -274,8 +274,8 @@ public class Vampire extends Race {
     boolean hasDarkVision = true;
 
     @Override
-    public void initalize(PlayerRef playerRef) {
-        super.initalize(playerRef);
+    public void initialize(PlayerRef playerRef) {
+        super.initialize(playerRef);
         Ref<EntityStore> ref = playerRef.getReference();
         assert ref != null;
         Store<EntityStore> store = ref.getStore();
@@ -300,9 +300,11 @@ public class Vampire extends Race {
                     msg = packetChecker(packet,playerRef);
                 }
                 else if (msg instanceof Packet[] packets){
-                    for (Packet packet : packets) {
-                        msg = packetChecker(packet,playerRef);
+                    for (int i = 0; i < packets.length; i++){
+                        packets[i] = packetChecker(packets[i],playerRef);
                     }
+                    msg = packets;
+
                 }
                 super.write(ctx, msg, promise);
             }

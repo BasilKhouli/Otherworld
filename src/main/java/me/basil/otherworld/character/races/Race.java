@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static me.basil.otherworld.character.races.AbilityManager.registerAbility;
-
 public abstract class Race {
     private final String name; // technically better practice for this to be private with a getter so changed it to that but does not matter IG
     private final Map<String,Ability> abilities = new HashMap<>();
@@ -58,7 +56,7 @@ public abstract class Race {
 
 
 
-    public void initalize(PlayerRef playerRef){ //basically every class will have modifiers so set them now
+    public void initialize(PlayerRef playerRef){ //basically every class will have modifiers so set them now
         Ref<EntityStore> ref = playerRef.getReference();
         assert ref != null;
         Store<EntityStore> store = ref.getStore();
