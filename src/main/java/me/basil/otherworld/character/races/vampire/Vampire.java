@@ -4,16 +4,24 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.protocol.CachedPacket;
+import com.hypixel.hytale.protocol.InteractionType;
+import com.hypixel.hytale.protocol.Packet;
 import com.hypixel.hytale.protocol.SavedMovementStates;
+import com.hypixel.hytale.protocol.packets.interaction.SyncInteractionChain;
 import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
+import com.hypixel.hytale.protocol.packets.world.SetChunk;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.entityeffect.config.EntityEffect;
-import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.io.PacketHandler;
+import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
+import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entity.stamina.StaminaModule;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
@@ -22,14 +30,21 @@ import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntitySta
 import com.hypixel.hytale.server.core.modules.entitystats.modifier.Modifier;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.hypixel.hytale.server.core.util.TargetUtil;
-import io.netty.channel.Channel;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
 import me.basil.otherworld.utils.SimpleSunlightDetector;
 import org.jspecify.annotations.NonNull;
 
+import java.lang.reflect.Field;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntPredicate;
@@ -70,8 +85,39 @@ public class Vampire extends Race {
 
         flightLogic(deltaTime,ref,playerRef,store,commandBuffer);
         burnInSunlight(deltaTime,ref,playerRef,store,commandBuffer);
-        darkVisionLogic(deltaTime,ref,playerRef,store,commandBuffer);
         //playerRef.sendMessage(Message.raw(SimpleSunlightDetector.isExposedToSunlight(ref,store) ? "In Sunlight" : "Not in Sunlight"));
+
+        PacketHandler ph = playerRef.getPacketHandler();
+        if (ph instanceof GamePacketHandler gph){
+
+            Deque<SyncInteractionChain> packets = gph.getInteractionPacketQueue();
+            for (SyncInteractionChain packet : packets) {//Mostly for debug all will be replaced with proper ways to set later
+                if (packet.interactionType == InteractionType.Use && packet.initial){
+
+                    hasDarkVision = !hasDarkVision;
+                    String outString = hasDarkVision ? "Enabled" : "Disabled";
+                    HeadRotation headRotation = store.getComponent(ref, HeadRotation.getComponentType());
+                    assert headRotation != null;
+                    Vector3f rotation = headRotation.getRotation();
+                    float pitch = rotation.x;
+                    float normalizedPitch = (pitch + (float)Math.PI/2) / (float)Math.PI;
+                    playerRef.sendMessage(Message.raw(String.valueOf(pitch)));
+
+                    brightnessLevel = (int) (normalizedPitch * 15f) ;
+                    playerRef.sendMessage(Message.raw(String.valueOf(brightnessLevel)));
+
+                    //playerRef.sendMessage(Message.raw("Dark Vision: " + outString));
+                    EventTitleUtil.hideEventTitleFromPlayer(playerRef, 0);
+
+                    EventTitleUtil.showEventTitleToPlayer(playerRef,Message.raw(outString),Message.raw("Dark Vision:"),false,null,2,0,1);
+                    reloadChunks(playerRef);
+                }
+                //playerRef.sendMessage(Message.raw("Packet: " + packet.getClass().getSimpleName()));
+            }
+
+        }
+
+
 
     }
 
@@ -209,6 +255,8 @@ public class Vampire extends Race {
                 }
                 /*
                 if (playerModel != null){
+
+
                     commandBuffer.replaceComponent(ref,ModelComponent.getComponentType(),new ModelComponent(playerModel));
                     PlayerSkinComponent playerSkinComponent = store.getComponent(ref, PlayerSkinComponent.getComponentType());
                     if (playerSkinComponent != null) {
@@ -223,12 +271,148 @@ public class Vampire extends Race {
         movementManager.update(playerRef.getPacketHandler());
     }
 
-    private void darkVisionLogic(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
-        //TODO Implement Dark Sight
-        PacketHandler handler = playerRef.getPacketHandler();
-        Channel channel = handler.getChannel();
-        //TODO Add a ChannelOutboundHandlerAdapter to modify outgoing packets to give full bright effect;
+    boolean hasDarkVision = true;
 
+    @Override
+    public void initalize(PlayerRef playerRef) {
+        super.initalize(playerRef);
+        Ref<EntityStore> ref = playerRef.getReference();
+        assert ref != null;
+        Store<EntityStore> store = ref.getStore();
+
+        EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
+        assert effectController != null;
+
+        EntityEffect vampirePassive = EntityEffect.getAssetMap().getAsset("Vampire_Passive_Effects");
+        if (vampirePassive != null){
+            effectController.addEffect(ref, vampirePassive, store);
+        }
+
+        //Full bright packet watcher initialization This super duper does not work rn;
+        final ChannelOutboundHandlerAdapter fullBrightHandler = new ChannelOutboundHandlerAdapter() {
+            @Override
+            public void write(ChannelHandlerContext ctx, Object msg, io.netty.channel.ChannelPromise promise) throws Exception {
+                if (!hasDarkVision){
+                    super.write(ctx, msg, promise);
+                    return;
+                }
+                if (msg instanceof Packet packet){
+                    msg = packetChecker(packet,playerRef);
+                }
+                else if (msg instanceof Packet[] packets){
+                    for (Packet packet : packets) {
+                        msg = packetChecker(packet,playerRef);
+                    }
+                }
+                super.write(ctx, msg, promise);
+            }
+        };
+
+        playerRef.getPacketHandler().getChannel().pipeline().addLast("Vampire_FullBright",fullBrightHandler);
+
+
+    }
+
+    private Packet packetChecker(Packet originalPacket, PlayerRef playerRef){
+        if (originalPacket instanceof SetChunk setChunk){
+            return modifyChunkPacket(setChunk,playerRef);
+        }
+        else if (originalPacket instanceof CachedPacket<?> cachedPacket && cachedPacket.getId() == 131){
+            SetChunk unpackedSetChunk = unpackSetChunk(cachedPacket);
+            if (unpackedSetChunk != null){
+                return modifyChunkPacket(unpackedSetChunk,playerRef);
+            }
+        }
+        return originalPacket;
+    }
+
+    int brightnessLevel = 10;
+    private SetChunk modifyChunkPacket(SetChunk originalPacket, PlayerRef playerRef){
+        SetChunk modifiedPacket = new SetChunk(originalPacket);
+        final byte[] lightData = generateFlatLightData();
+
+
+        modifiedPacket.localLight = lightData;
+        modifiedPacket.globalLight = lightData;
+
+        //playerRef.sendMessage(Message.raw(String.valueOf(originalPacket.localLight.length)));
+
+
+        return modifiedPacket;
+    }
+
+    private byte[] generateFlatLightData() {
+        ByteBuf buf = Unpooled.buffer(18);
+        buf.writeBoolean(true);
+        buf.writeByte(0);
+        short packed = (short)((brightnessLevel & 15) * 4369);
+
+        for(int i = 0; i < 8; ++i) {
+            buf.writeShortLE(packed);
+        }
+
+        byte[] data = new byte[buf.readableBytes()];
+        buf.readBytes(data);
+        buf.release();
+
+        return data;
+    }
+
+    private SetChunk unpackSetChunk(CachedPacket<?> cached) { // I HAVE NO IDEA HOW THIS WORKS STOLEN FROM FULL BRIGHT MOD :D
+
+        Field cachedBytesField = null;
+        try {
+            cachedBytesField = CachedPacket.class.getDeclaredField("cachedBytes");
+            cachedBytesField.setAccessible(true);
+        } catch (NoSuchFieldException var2) {
+            //((HytaleLogger.Api)LOGGER.atWarning()).log("Could not access CachedPacket.cachedBytes - some features may not work");
+        }
+
+        if (cachedBytesField == null) {
+            return null;
+        } else {
+            try {
+                ByteBuf buf = (ByteBuf)cachedBytesField.get(cached);
+                if (buf != null) {
+                    return SetChunk.deserialize(buf.duplicate(), 0);
+                }
+            } catch (Exception var3) {
+                //((HytaleLogger.Api)LOGGER.atFine()).log("Failed to unpack CachedPacket");
+            }
+
+            return null;
+        }
+    }
+
+    public void reloadChunks(PlayerRef playerRef) {
+        try {
+            Ref<?> ref = playerRef.getReference();
+            if (ref != null) {
+                World world = ((EntityStore)ref.getStore().getExternalData()).getWorld();
+                world.execute(() -> playerRef.getChunkTracker().unloadAll(playerRef));
+            }
+        } catch (Exception e) {
+            //((HytaleLogger.Api)LOGGER.atWarning()).log("Failed to reload chunks: " + e.getMessage());
+        }
+
+    }
+
+    @Override
+    public void removed(PlayerRef playerRef) {
+        super.removed(playerRef);
+        Ref<EntityStore> ref = playerRef.getReference();
+        assert ref != null;
+        Store<EntityStore> store = ref.getStore();
+
+        EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
+        assert effectController != null;
+
+        int effectIndex = EntityEffect.getAssetMap().getIndex("Vampire_Passive_Effects");
+
+        if (effectIndex != Integer.MIN_VALUE) {
+            effectController.removeEffect(ref, effectIndex, store);
+        }
+        playerRef.getPacketHandler().getChannel().pipeline().remove("Vampire_FullBright");
 
     }
 }

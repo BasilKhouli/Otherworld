@@ -471,7 +471,7 @@
       }
     }
   ],
-  "MaxScale": 100,
+  "MaxScale": 0.7,
   "MinScale": 0.7,
   "Particles": [
     {
