@@ -3,8 +3,12 @@ package me.basil.otherworld;
 import au.ellie.hyui.builders.HyUIPage;
 import au.ellie.hyui.builders.ItemGridBuilder;
 import au.ellie.hyui.builders.PageBuilder;
+import au.ellie.hyui.events.DroppedEventData;
+import au.ellie.hyui.events.SlotClickPressWhileDraggingEventData;
+import au.ellie.hyui.events.SlotMouseDragCompletedEventData;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
@@ -13,10 +17,12 @@ import com.hypixel.hytale.server.core.ui.ItemGridSlot;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.components.OtherworldData;
 import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * This is an example command that will simply print the name of the plugin in chat when used.
@@ -42,17 +48,78 @@ public class DebugOtherWorldDataCommand extends AbstractPlayerCommand {
         PageBuilder page = PageBuilder.pageForPlayer(playerRef)
                 .loadHtml("Pages/DebugPage.html");
 
-        page.getById("salvage-grid", ItemGridBuilder.class).ifPresent(salvageGrid -> {
-            var size = owData.getRace().getAbilities().size();
-            salvageGrid.withSlotsPerRow(size);
+        List<Ability> raceAbilities = owData.getRace().getAbilities().values().stream().toList();
+        page.getById("race-abilities-grid", ItemGridBuilder.class).ifPresent(abilityGrid -> {
+
+            var size = raceAbilities.size();
             for (int i = 0; i < size; i++) {
-                var ability = owData.getRace().getAbilities().values().stream().toList().get(i);
-                salvageGrid.addSlot(new ItemGridSlot(new ItemStack("Weapon_Sword_Steel_Incandescent")).setItemStack(ability.repItem).setName(ability.name).setDescription(ability.description));
+                var ability = raceAbilities.get(i);
+                abilityGrid.addSlot(new ItemGridSlot(ability.repItem).setName(ability.name).setDescription(ability.description));
             }
+            final int slotsToAdd = ((int) Math.ceil(size / 10.0) * 10) - size;
+
+            for (int i = 0; i < slotsToAdd; i++) {
+                abilityGrid.addSlot(new ItemGridSlot());
+            }
+        });
+
+        page.getById("equipped-abilities-grid",ItemGridBuilder.class).ifPresent(abilityGrid -> {
+            for (int i = 0; i < 9 ; i++){
+                Ability ability = owData.getAbility(i);
+                ItemGridSlot itemGridSlot = new ItemGridSlot();
+                if (ability != null) {
+                    itemGridSlot.setItemStack(ability.repItem).setName(ability.name).setDescription(ability.description);
+                }
+                abilityGrid.addSlot(itemGridSlot);
+            }
+
+        });
+
+        page.addEventListener("equipped-abilities-grid", CustomUIEventBindingType.Dropped,( eventData , ctx)->{
+            DroppedEventData  data = (DroppedEventData) eventData;
+            int newSlotIndex = data.getSlotIndex();
+            int sourceGridIndex = data.getSourceInventorySectionId();
+            int sourceSlotIndex = data.getSourceSlotId();
+
+            ctx.getById("equipped-abilities-grid",ItemGridBuilder.class).ifPresent((grid)->{
+
+
+                if (sourceGridIndex == 20){
+                    //swap ability
+                    Ability draggedAbility = owData.getAbility(sourceSlotIndex);
+                    Ability droppedAbility = owData.getAbility(newSlotIndex);
+                    owData.swapAbilitys(newSlotIndex,sourceSlotIndex);
+                    //swap visuals
+                    ItemGridSlot draggedItemSlot = grid.getSlot(sourceSlotIndex);
+                    ItemGridSlot dropSlot = grid.getSlot(newSlotIndex);
+                    grid.updateSlot(dropSlot,sourceSlotIndex);
+                    grid.updateSlot(draggedItemSlot,newSlotIndex);
+
+
+
+                }
+                else {
+                    //set ability
+                    ctx.getById("race-abilities-grid",ItemGridBuilder.class).ifPresent(abilityGrid -> {
+                        Ability draggedAbility = raceAbilities.get(sourceSlotIndex);
+                        owData.addAbility(draggedAbility.name,newSlotIndex);
+                        //set visuals
+                        ItemGridSlot draggedItemSlot = abilityGrid.getSlot(sourceSlotIndex);
+                        grid.updateSlot(draggedItemSlot,newSlotIndex);
+                    });
+
+                }
+
+
+            });
+
+            ctx.updatePage(true);
 
 
 
         });
+
+
 
         page.open(store);
 

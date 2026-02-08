@@ -83,26 +83,41 @@ public class OtherworldData implements Component<EntityStore> {
     public void addAbility(String abilityName, int slot){
 
         Ability ability = race.getAbility(abilityName).clone();
-        if (ability == null){return;}
 
         Ability oldAbility = equippedAbilities[slot];
-        //call unequipped
 
-        if (abilityPool.stream().anyMatch((Ability poolAbility)-> poolAbility.name.equals(abilityName))){
-            ability = abilityPool.stream().filter((Ability poolAbility)->{ return poolAbility.name.equals(abilityName);}).findFirst().orElse(ability);
-        }
-        else abilityPool.add(ability);
-        equippedAbilities[slot] = ability;
-
-        //call equipped here
         if (oldAbility != null){
-            if (Arrays.stream(equippedAbilities).noneMatch((Ability eAbility)->{ return eAbility.name.equals(oldAbility.name); })) {//clear pool
+            //call unequipped
+
+            if (Arrays.stream(equippedAbilities).noneMatch((Ability eAbility)->{ return eAbility!=null && eAbility.name.equals(oldAbility.name); })) {//clear pool
                 abilityPool.remove(oldAbility);
             }
         }
 
 
+        if (ability != null){
+            if (abilityPool.stream().anyMatch((Ability poolAbility)-> poolAbility.name.equals(abilityName))){
+                ability = abilityPool.stream().filter((Ability poolAbility)->{ return poolAbility.name.equals(abilityName);}).findFirst().orElse(ability);
+            }
+            else abilityPool.add(ability);
 
+            //call equipped here
+        }
+        equippedAbilities[slot] = ability;
+
+
+
+
+
+
+
+
+
+    }
+    public void swapAbilitys(int slot1, int slot2){
+        Ability oldAbility = equippedAbilities[slot1];
+        equippedAbilities[slot1] = equippedAbilities[slot2];
+        equippedAbilities[slot2] = oldAbility;
     }
 
     public Ability getAbility(int slot){
