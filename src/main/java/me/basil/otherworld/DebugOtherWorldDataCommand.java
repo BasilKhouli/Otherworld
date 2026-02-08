@@ -1,11 +1,15 @@
 package me.basil.otherworld;
 
+import au.ellie.hyui.builders.HyUIPage;
+import au.ellie.hyui.builders.ItemGridBuilder;
 import au.ellie.hyui.builders.PageBuilder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
+import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.ui.ItemGridSlot;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -32,10 +36,25 @@ public class DebugOtherWorldDataCommand extends AbstractPlayerCommand {
             playerRef.sendMessage(Message.raw("Hytalian (No Race Selected)"));
             return;
         }
+
+
         playerRef.sendMessage(Message.raw(owData.getRace().getName()));
-        PageBuilder.pageForPlayer(playerRef)
-                .loadHtml("Pages/TestUi.html")
-                .open(store);
+        PageBuilder page = PageBuilder.pageForPlayer(playerRef)
+                .loadHtml("Pages/DebugPage.html");
+
+        page.getById("salvage-grid", ItemGridBuilder.class).ifPresent(salvageGrid -> {
+            var size = owData.getRace().getAbilities().size();
+            salvageGrid.withSlotsPerRow(size);
+            for (int i = 0; i < size; i++) {
+                var ability = owData.getRace().getAbilities().values().stream().toList().get(i);
+                salvageGrid.addSlot(new ItemGridSlot(new ItemStack("Weapon_Sword_Steel_Incandescent")).setItemStack(ability.repItem).setName(ability.name).setDescription(ability.description));
+            }
+
+
+
+        });
+
+        page.open(store);
 
     }
 

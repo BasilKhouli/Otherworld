@@ -3,17 +3,24 @@ package me.basil.otherworld.character.races;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 public abstract class Ability {
 
     public final String name;
+    public final String description;
+    public final ItemStack repItem;//Represents this in UI
+
 
 
 
     protected Ability(String name) {
+
         this.name = name;
+        this.description = name + " Ability";
+        this.repItem = new ItemStack("Soil_Dirt");
     }
 
     public void equipped(PlayerRef playerRef) {

@@ -38,6 +38,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
+import me.basil.otherworld.character.races.vampire.abilities.DarkSightToggle;
 import me.basil.otherworld.character.races.vampire.abilities.Drain;
 import me.basil.otherworld.utils.SimpleSunlightDetector;
 import org.jspecify.annotations.NonNull;
@@ -52,7 +53,8 @@ public class Vampire extends Race {
     public Vampire( ) {
 
         List<Ability> raceAbilities = List.of(
-                new Drain()
+                new Drain(),
+                new DarkSightToggle()
 
                 //TODO
 
@@ -82,41 +84,8 @@ public class Vampire extends Race {
     @Override
     public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer) {
 
-
-
         flightLogic(deltaTime,ref,playerRef,store,commandBuffer);
         burnInSunlight(deltaTime,ref,playerRef,store,commandBuffer);
-        //playerRef.sendMessage(Message.raw(SimpleSunlightDetector.isExposedToSunlight(ref,store) ? "In Sunlight" : "Not in Sunlight"));
-
-        PacketHandler ph = playerRef.getPacketHandler();
-        if (ph instanceof GamePacketHandler gph){
-
-            Deque<SyncInteractionChain> packets = gph.getInteractionPacketQueue();
-            for (SyncInteractionChain packet : packets) {//Mostly for debug all will be replaced with proper ways to set later
-                if (packet.interactionType == InteractionType.Use && packet.initial){
-
-                    HeadRotation headRotation = store.getComponent(ref, HeadRotation.getComponentType());
-                    assert headRotation != null;
-                    Vector3f rotation = headRotation.getRotation();
-                    float pitch = rotation.x;
-                    float normalizedPitch = (pitch + (float)Math.PI/2) / (float)Math.PI;
-
-                    brightnessLevel = (int) (normalizedPitch * 15f);
-                    hasDarkVision = brightnessLevel > 3;
-
-
-                    EventTitleUtil.hideEventTitleFromPlayer(playerRef, 0);
-                    String outString = hasDarkVision ? "Enabled" : "Disabled";
-                    EventTitleUtil.showEventTitleToPlayer(playerRef,Message.raw(outString),Message.raw("Dark Vision:"),false,null,2,0,1);
-                    reloadChunks(playerRef);
-                    break;
-                }
-                //playerRef.sendMessage(Message.raw("Packet: " + packet.getClass().getSimpleName()));
-            }
-
-        }
-
-
 
     }
 
@@ -270,7 +239,7 @@ public class Vampire extends Race {
         movementManager.update(playerRef.getPacketHandler());
     }
 
-    boolean hasDarkVision = false;
+    public boolean hasDarkVision = false;
 
     @Override
     public void initialize(PlayerRef playerRef) {
@@ -327,7 +296,7 @@ public class Vampire extends Race {
         return originalPacket;
     }
 
-    int brightnessLevel = 10;
+    public int brightnessLevel = 10;
     private SetChunk modifyChunkPacket(SetChunk originalPacket, PlayerRef playerRef){
         SetChunk modifiedPacket = new SetChunk(originalPacket);
         final byte[] lightData = generateFlatLightData();

@@ -52,7 +52,7 @@ public class OtherworldData implements Component<EntityStore> {
             }
         }
 
-        hud = HudBuilder.hudForPlayer(playerRef).loadHtml("Pages/SkillList.html").withRefreshRate(500)
+        hud = HudBuilder.hudForPlayer(playerRef).loadHtml("Huds/SkillList.html").withRefreshRate(500)
                 .onRefresh(hud ->{
                     for  (int i = 0;i < equippedAbilities.length;i++){
 
