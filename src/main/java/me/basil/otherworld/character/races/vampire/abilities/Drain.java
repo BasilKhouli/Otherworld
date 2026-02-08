@@ -59,7 +59,7 @@ public class Drain extends Ability {
                             int staminaIndex = DefaultEntityStatTypes.getStamina();
                             targetStatMap.subtractStatValue(staminaIndex, 2f);
                             int staminaRDIndex = EntityStatType.getAssetMap().getIndex("StaminaRegenDelay");
-                            targetStatMap.subtractStatValue(staminaIndex, 2f);
+                            targetStatMap.subtractStatValue(staminaRDIndex, 2f);
                         }
 
 

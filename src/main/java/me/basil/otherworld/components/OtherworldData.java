@@ -1,7 +1,13 @@
 package me.basil.otherworld.components;
 
+import au.ellie.hyui.builders.HudBuilder;
+import au.ellie.hyui.builders.HyUIHud;
+import au.ellie.hyui.builders.LabelBuilder;
+import au.ellie.hyui.builders.PageBuilder;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.*;
+import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.Main;
@@ -23,6 +29,7 @@ public class OtherworldData implements Component<EntityStore> {
 
     public int selectedSlot;
     public Ability selectedAbility;
+    public HyUIHud hud;
 
     public static final BuilderCodec<OtherworldData> CODEC = BuilderCodec.builder(OtherworldData.class,OtherworldData::new).build(); //this will be built to store persistent per player data
 
@@ -45,6 +52,30 @@ public class OtherworldData implements Component<EntityStore> {
             }
         }
 
+        hud = HudBuilder.hudForPlayer(playerRef).loadHtml("Pages/SkillList.html").withRefreshRate(500)
+                .onRefresh(hud ->{
+                    for  (int i = 0;i < equippedAbilities.length;i++){
+
+                        String labelText = "Empty Slot";
+                        final  Ability ability = equippedAbilities[i];
+                        if (ability != null){
+                            labelText = ability.name;
+                        }
+
+                        final String finalLabelText = labelText;
+                        boolean test = hud.getById("Ability"+i, LabelBuilder.class).isPresent();
+                        hud.getById("Ability"+i, LabelBuilder.class).ifPresent(
+                                label-> label.withText(finalLabelText)
+                        );
+                        hud.getById("RaceName",LabelBuilder.class).ifPresent(
+                                labelBuilder -> labelBuilder.withText(race.getName())
+                        );
+
+
+
+                    }
+
+                }).show();
 
 
     }
@@ -57,17 +88,20 @@ public class OtherworldData implements Component<EntityStore> {
         Ability oldAbility = equippedAbilities[slot];
         //call unequipped
 
-        if (abilityPool.stream().anyMatch((Ability poolAbility)->{ return poolAbility.name.equals(abilityName);})){
+        if (abilityPool.stream().anyMatch((Ability poolAbility)-> poolAbility.name.equals(abilityName))){
             ability = abilityPool.stream().filter((Ability poolAbility)->{ return poolAbility.name.equals(abilityName);}).findFirst().orElse(ability);
         }
         else abilityPool.add(ability);
         equippedAbilities[slot] = ability;
 
         //call equipped here
-
-        if (Arrays.stream(equippedAbilities).noneMatch((Ability eAbility)->{ return eAbility.name.equals(oldAbility.name); })) {//clear pool
-            abilityPool.remove(oldAbility);
+        if (oldAbility != null){
+            if (Arrays.stream(equippedAbilities).noneMatch((Ability eAbility)->{ return eAbility.name.equals(oldAbility.name); })) {//clear pool
+                abilityPool.remove(oldAbility);
+            }
         }
+
+
 
     }
 

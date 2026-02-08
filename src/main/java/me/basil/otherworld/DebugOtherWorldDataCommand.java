@@ -1,5 +1,6 @@
 package me.basil.otherworld;
 
+import au.ellie.hyui.builders.PageBuilder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.Message;
@@ -31,8 +32,11 @@ public class DebugOtherWorldDataCommand extends AbstractPlayerCommand {
             playerRef.sendMessage(Message.raw("Hytalian (No Race Selected)"));
             return;
         }
-
         playerRef.sendMessage(Message.raw(owData.getRace().getName()));
+        PageBuilder.pageForPlayer(playerRef)
+                .loadHtml("Pages/TestUi.html")
+                .open(store);
+
     }
 
 
