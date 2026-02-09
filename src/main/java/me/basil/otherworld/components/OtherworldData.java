@@ -3,11 +3,8 @@ package me.basil.otherworld.components;
 import au.ellie.hyui.builders.HudBuilder;
 import au.ellie.hyui.builders.HyUIHud;
 import au.ellie.hyui.builders.LabelBuilder;
-import au.ellie.hyui.builders.PageBuilder;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.*;
-import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
-import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.Main;
@@ -82,7 +79,7 @@ public class OtherworldData implements Component<EntityStore> {
 
     public void addAbility(String abilityName, int slot){
 
-        Ability ability = race.getAbility(abilityName).clone();
+        Ability ability = race.getAbility(abilityName);
 
         Ability oldAbility = equippedAbilities[slot];
 
@@ -103,18 +100,14 @@ public class OtherworldData implements Component<EntityStore> {
 
             //call equipped here
         }
-        equippedAbilities[slot] = ability;
 
-
-
-
-
-
+        equippedAbilities[slot] = ability != null ? ability.clone() : ability ;
 
 
 
     }
-    public void swapAbilitys(int slot1, int slot2){
+
+    public void swapAbilities(int slot1, int slot2){
         Ability oldAbility = equippedAbilities[slot1];
         equippedAbilities[slot1] = equippedAbilities[slot2];
         equippedAbilities[slot2] = oldAbility;

@@ -1,18 +1,14 @@
-package me.basil.otherworld;
+package me.basil.otherworld.commands;
 
-import au.ellie.hyui.builders.HyUIPage;
 import au.ellie.hyui.builders.ItemGridBuilder;
 import au.ellie.hyui.builders.PageBuilder;
 import au.ellie.hyui.events.DroppedEventData;
-import au.ellie.hyui.events.SlotClickPressWhileDraggingEventData;
-import au.ellie.hyui.events.SlotMouseDragCompletedEventData;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
-import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.ui.ItemGridSlot;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -21,16 +17,12 @@ import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.components.OtherworldData;
 import org.jspecify.annotations.NonNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
-/**
- * This is an example command that will simply print the name of the plugin in chat when used.
- */
-public class DebugOtherWorldDataCommand extends AbstractPlayerCommand {
+public class OtherWorldDataCommand extends AbstractPlayerCommand {
 
 
-    public DebugOtherWorldDataCommand() {
+    public OtherWorldDataCommand() {
         super("otherworld", "prints info about otherworldData");
 
     }
@@ -46,14 +38,13 @@ public class DebugOtherWorldDataCommand extends AbstractPlayerCommand {
 
         playerRef.sendMessage(Message.raw(owData.getRace().getName()));
         PageBuilder page = PageBuilder.pageForPlayer(playerRef)
-                .loadHtml("Pages/DebugPage.html");
+                .loadHtml("Pages/OtherworldData.html");
 
         List<Ability> raceAbilities = owData.getRace().getAbilities().values().stream().toList();
         page.getById("race-abilities-grid", ItemGridBuilder.class).ifPresent(abilityGrid -> {
 
             var size = raceAbilities.size();
-            for (int i = 0; i < size; i++) {
-                var ability = raceAbilities.get(i);
+            for (Ability ability : raceAbilities) {
                 abilityGrid.addSlot(new ItemGridSlot(ability.repItem).setName(ability.name).setDescription(ability.description));
             }
             final int slotsToAdd = ((int) Math.ceil(size / 10.0) * 10) - size;
@@ -85,16 +76,21 @@ public class DebugOtherWorldDataCommand extends AbstractPlayerCommand {
 
 
                 if (sourceGridIndex == 20){
-                    //swap ability
-                    Ability draggedAbility = owData.getAbility(sourceSlotIndex);
-                    Ability droppedAbility = owData.getAbility(newSlotIndex);
-                    owData.swapAbilitys(newSlotIndex,sourceSlotIndex);
-                    //swap visuals
-                    ItemGridSlot draggedItemSlot = grid.getSlot(sourceSlotIndex);
-                    ItemGridSlot dropSlot = grid.getSlot(newSlotIndex);
-                    grid.updateSlot(dropSlot,sourceSlotIndex);
-                    grid.updateSlot(draggedItemSlot,newSlotIndex);
-
+                    //modify equipped abilities
+                    if (sourceSlotIndex == newSlotIndex){ //remove abilities
+                        if (data.getPressedMouseButton() == 3){
+                            owData.addAbility(null,newSlotIndex);
+                            //remove visual
+                            grid.updateSlot(new ItemGridSlot(),newSlotIndex);
+                        }
+                    }else { //swap ability
+                        owData.swapAbilities(newSlotIndex,sourceSlotIndex);
+                        //swap visuals
+                        ItemGridSlot draggedItemSlot = grid.getSlot(sourceSlotIndex);
+                        ItemGridSlot dropSlot = grid.getSlot(newSlotIndex);
+                        grid.updateSlot(dropSlot,sourceSlotIndex);
+                        grid.updateSlot(draggedItemSlot,newSlotIndex);
+                    }
 
 
                 }
@@ -118,8 +114,6 @@ public class DebugOtherWorldDataCommand extends AbstractPlayerCommand {
 
 
         });
-
-
 
         page.open(store);
 

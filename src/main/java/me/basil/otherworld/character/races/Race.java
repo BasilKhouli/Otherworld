@@ -53,6 +53,9 @@ public abstract class Race {
     }
 
     public Ability getAbility(String abilityName) {
+        if (abilityName == null) {
+            return null;
+        }
         abilityName = abilityName.toLowerCase();
         if (!(abilities.containsKey(abilityName))) {
             return null;

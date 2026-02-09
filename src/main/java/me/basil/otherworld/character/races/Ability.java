@@ -14,7 +14,11 @@ public abstract class Ability {
     public final ItemStack repItem;//Represents this in UI
 
 
-
+    protected Ability(String name, String description, ItemStack repItem) {
+        this.name = name;
+        this.description = description;
+        this.repItem = repItem;
+    }
 
     protected Ability(String name) {
 

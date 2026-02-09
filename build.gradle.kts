@@ -19,7 +19,7 @@ repositories {
 dependencies {
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.jspecify)
-    implementation("curse.maven:hyui-1431415:7591359")
+    implementation("curse.maven:hyui-1431415:7593351")
 }
 
 hytale {

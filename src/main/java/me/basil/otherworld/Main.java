@@ -9,6 +9,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.character.races.RaceManager;
+import me.basil.otherworld.commands.OtherWorldDataCommand;
 import me.basil.otherworld.components.OtherworldData;
 import me.basil.otherworld.systems.RaceSystem;
 
@@ -30,7 +31,7 @@ public class Main extends JavaPlugin {
     @Override
     protected void setup() {
 
-        this.getCommandRegistry().registerCommand(new DebugOtherWorldDataCommand());
+        this.getCommandRegistry().registerCommand(new OtherWorldDataCommand());
 
         ComponentRegistryProxy<EntityStore> eSR =this.getEntityStoreRegistry();
         EventRegistry er = this.getEventRegistry();
