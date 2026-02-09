@@ -1,23 +1,38 @@
 <div class="page-overlay">
     <div class="decorated-container" data-hyui-title="Ability Slot Picker">
-        <div class="container-contents" style="layout-mode: Top; padding: 6;">
-            <p id="menu-desc">drag abilities to equip, right-click to remove</p>
-            <p id="abilities-desc">Abilities</p>
+        <div class="container-contents" style="layout-mode: Top; padding: 6; flex-direction: column; ">
 
+            <p id="menu-desc">Drag abilities to equip, swap or unequip them</p>
+
+            <p id="abilities-desc">Race Abilities</p>
             <div id="race-abilities-grid"
                  class="item-grid"
                  data-hyui-slots-per-row="10"
                  data-hyui-inventory-section-id="10"
+                 data-hyui-display-item-quantity="false"
                  data-hyui-are-items-draggable="true">
             </div>
-            <p id="eAbilities-desc">Equipped</p>
 
+            <p id="eAbilities-desc">Equipped Abilities</p>
             <div id="equipped-abilities-grid"
                  class="item-grid"
-                 data-hyui-slots-per-row="10"
+                 data-hyui-slots-per-row="9"
                  data-hyui-inventory-section-id="20"
+                 data-hyui-display-item-quantity="false"
                  data-hyui-are-items-draggable="true">
             </div>
+
+            <p id="unequip-desc">Unequip(NotWorkingRN)</p>
+            <div id="unequip-grid"
+                 class="item-grid"
+                 data-hyui-slots-per-row="1"
+                 data-hyui-inventory-section-id="30"
+                 data-hyui-display-item-quantity="false"
+                 data-hyui-are-items-draggable="true">
+                <div class="item-grid-slot"></div>
+            </div>
+
+
         </div>
     </div>
 </div>
