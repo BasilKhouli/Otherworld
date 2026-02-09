@@ -77,12 +77,8 @@ public class OtherWorldDataCommand extends AbstractPlayerCommand {
 
                 if (sourceGridIndex == 20){
                     //modify equipped abilities
-                    if (sourceSlotIndex == newSlotIndex){ //remove abilities
-                        if (data.getPressedMouseButton() == 3){
-                            owData.addAbility(null,newSlotIndex);
-                            //remove visual
-                            grid.updateSlot(new ItemGridSlot(),newSlotIndex);
-                        }
+                    if (sourceSlotIndex == newSlotIndex){
+
                     }else { //swap ability
                         owData.swapAbilities(newSlotIndex,sourceSlotIndex);
                         //swap visuals
@@ -110,6 +106,18 @@ public class OtherWorldDataCommand extends AbstractPlayerCommand {
             });
 
             ctx.updatePage(true);
+
+        });
+        page.addEventListener("unequip-grid",CustomUIEventBindingType.Dropped,(eventData,ctx)->{
+            DroppedEventData  data = (DroppedEventData) eventData;
+            if (data.getSourceInventorySectionId() != 30){//removes abilities
+                return;
+            }
+            ctx.getById("equipped-abilities-grid",ItemGridBuilder.class).ifPresent(grid->{
+                owData.addAbility(null,data.getSourceSlotId());
+                grid.updateSlot(new ItemGridSlot(),data.getSourceSlotId());
+            });
+
 
 
 
