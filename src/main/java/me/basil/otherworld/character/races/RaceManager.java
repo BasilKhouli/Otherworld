@@ -7,7 +7,9 @@ import me.basil.otherworld.character.races.spiritborn.Spiritborn;
 import me.basil.otherworld.character.races.vampire.Vampire;
 import me.basil.otherworld.character.races.werewolf.Werewolf;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RaceManager { // Implimentation choice: instead of sta
@@ -25,6 +27,10 @@ public class RaceManager { // Implimentation choice: instead of sta
             returnRace = returnRace.clone(); //THIS ONLY EVER GIVES COPIES OF THE RACES OUT
         }
         return  returnRace;
+    }
+
+    public static List<Race> getRaces(){
+        return new ArrayList<>(races.values());
     }
 
     public static void initialize(){

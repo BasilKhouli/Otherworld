@@ -1,7 +1,6 @@
 package me.basil.otherworld;
 
 import com.hypixel.hytale.component.*;
-import com.hypixel.hytale.event.EventRegistry;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
@@ -11,7 +10,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.character.races.RaceManager;
-import me.basil.otherworld.commands.OtherWorldDataCommand;
+import me.basil.otherworld.commands.OtherworldCommand;
 import me.basil.otherworld.components.OtherworldData;
 import me.basil.otherworld.systems.RaceSystem;
 
@@ -32,8 +31,9 @@ public class Main extends JavaPlugin {
 
     @Override
     protected void setup() {
+        RaceManager.initialize();
 
-        this.getCommandRegistry().registerCommand(new OtherWorldDataCommand());
+        this.getCommandRegistry().registerCommand(new OtherworldCommand());
 
         ComponentRegistryProxy<EntityStore> eSR =this.getEntityStoreRegistry();
         OWDcomponentType = eSR.registerComponent(OtherworldData.class,"OtherworldData",OtherworldData.CODEC);
@@ -41,7 +41,7 @@ public class Main extends JavaPlugin {
         eSR.registerSystem(new RaceSystem());
 
 
-        RaceManager.initialize();
+
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, (event) -> {
             Player player = event.getPlayer();
             World world = player.getWorld();
