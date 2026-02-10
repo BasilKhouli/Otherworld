@@ -1,0 +1,46 @@
+
+Group{
+  Anchor: (Height: 60, Top: 20);
+  LayoutMode: Right;
+
+  Group #SkillBar {
+    Anchor: (Width: 100, Height: 200, Top: 20);
+    Background: (Color: #3f3f3f);
+    LayoutMode: Top;
+
+
+    Label #AspectName {
+      Text: "AName";
+    }
+
+    Label #Skill0 {
+      Text: "0";
+    }
+    Label #Skill1 {
+      Text: "1";
+    }
+    Label #Skill2 {
+      Text: "2";
+    }
+    Label #Skill3 {
+      Text: "3";
+    }
+    Label #Skill4 {
+      Text: "4";
+    }
+    Label #Skill5 {
+      Text: "5";
+    }
+    Label #Skill6 {
+      Text: "6";
+    }
+    Label #Skill7 {
+      Text: "7";
+    }
+    Label #Skill8 {
+      Text: "8";
+    }
+
+  }
+
+}
