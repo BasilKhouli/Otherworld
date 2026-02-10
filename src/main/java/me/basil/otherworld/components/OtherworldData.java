@@ -1,8 +1,5 @@
 package me.basil.otherworld.components;
 
-import au.ellie.hyui.builders.HudBuilder;
-import au.ellie.hyui.builders.HyUIHud;
-import au.ellie.hyui.builders.LabelBuilder;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -26,7 +23,6 @@ public class OtherworldData implements Component<EntityStore> {
 
     public int selectedSlot;
     public Ability selectedAbility;
-    public HyUIHud hud;
 
     public static final BuilderCodec<OtherworldData> CODEC = BuilderCodec.builder(OtherworldData.class,OtherworldData::new).build(); //this will be built to store persistent per player data
 
@@ -49,30 +45,7 @@ public class OtherworldData implements Component<EntityStore> {
             }
         }
 
-        hud = HudBuilder.hudForPlayer(playerRef).loadHtml("Huds/SkillList.html").withRefreshRate(500)
-                .onRefresh(hud ->{
-                    for  (int i = 0;i < equippedAbilities.length;i++){
 
-                        String labelText = "Empty Slot";
-                        final  Ability ability = equippedAbilities[i];
-                        if (ability != null){
-                            labelText = ability.name;
-                        }
-
-                        final String finalLabelText = labelText;
-                        boolean test = hud.getById("Ability"+i, LabelBuilder.class).isPresent();
-                        hud.getById("Ability"+i, LabelBuilder.class).ifPresent(
-                                label-> label.withText(finalLabelText)
-                        );
-                        hud.getById("RaceName",LabelBuilder.class).ifPresent(
-                                labelBuilder -> labelBuilder.withText(race.getName())
-                        );
-
-
-
-                    }
-
-                }).show();
 
 
     }
