@@ -16,13 +16,14 @@ import org.jspecify.annotations.NonNull;
 
 import java.awt.*;
 
-public class OWRaceSelectCommand extends AbstractPlayerCommand {
+public class OwRaceSelectCommand extends AbstractPlayerCommand {
     private final RequiredArg<Race> raceArg;
 
-    public OWRaceSelectCommand() {
+    public OwRaceSelectCommand() {
         super("race", "Choose a race");
         addAliases("r");
         raceArg = withRequiredArg("Race", "Name of the race to choose", new RaceArgumentType());
+        addSubCommand(new OwRaceClearCommand());
     }
 
     @Override
@@ -34,9 +35,11 @@ public class OWRaceSelectCommand extends AbstractPlayerCommand {
             return;
         }
         if (selectedRace == null) {
+            commandContext.sendMessage(Message.raw("Race not found!").color(Color.red));
             return;
         }
-        owd.chooseRace(selectedRace.getName(),playerRef);
+
+        owd.chooseRace(selectedRace.getName());
         commandContext.sendMessage(Message.raw("You selected race: " + selectedRace.getName()));
     }
 }

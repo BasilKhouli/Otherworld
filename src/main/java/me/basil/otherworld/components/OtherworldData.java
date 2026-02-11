@@ -1,7 +1,9 @@
 package me.basil.otherworld.components;
 
+import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.*;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.Main;
@@ -24,33 +26,69 @@ public class OtherworldData implements Component<EntityStore> {
     public int selectedSlot;
     public Ability selectedAbility;
 
-    public static final BuilderCodec<OtherworldData> CODEC = BuilderCodec.builder(OtherworldData.class,OtherworldData::new).build(); //this will be built to store persistent per player data
 
-    public void chooseRace(String raceName,PlayerRef playerRef){
+    public boolean isInitalized = false;
+    Race previousRaceBuffer; // Null when race is initialized properly
 
-        Race oldRace = race;
+
+    public static final BuilderCodec<OtherworldData> CODEC = BuilderCodec.builder(OtherworldData.class,OtherworldData::new)
+            .append(new KeyedCodec<>("Race", BuilderCodec.STRING),
+                    (owd,value) -> owd.chooseRace(value),
+                    (owd) -> owd.getRaceName()
+                    )
+            .add()
+            .append(new KeyedCodec<>("Abilities", BuilderCodec.STRING_ARRAY),
+                    (owd,value) -> owd.setEquippedAbilities(value),
+                    (owd) -> owd.getEquippedAbilityNames()
+            )
+            .add()
+            .build();
+
+
+
+
+    public void chooseRace(String raceName){
+        if (previousRaceBuffer == null){
+            previousRaceBuffer = race;
+        }
         race = RaceManager.getRace(raceName);
+        isInitalized = false;
+        clearAbilities();
 
-        if (oldRace != null){
+
+    }
+
+    public void initializeRace(PlayerRef playerRef){
+
+
+        if (previousRaceBuffer != null){
             race.removed(playerRef);
         }
 
-        if(race != null){
+        if (race != null){
             race.initialize(playerRef);
+
             for (int i = 0;i < equippedAbilities.length;i++){
                 if (race.defaultEquippedAbilities[i] != null){
                     addAbility(race.defaultEquippedAbilities[i].name,i);
+                    playerRef.sendMessage(Message.raw(race.defaultEquippedAbilities[i].name+" "+i));
                 }
+
 
             }
         }
 
+        previousRaceBuffer = null;
+        isInitalized = true;
 
 
 
     }
 
     public void addAbility(String abilityName, int slot){
+        if (race == null){
+            return;
+        }
 
         Ability ability = race.getAbility(abilityName);
 
@@ -76,8 +114,6 @@ public class OtherworldData implements Component<EntityStore> {
 
         equippedAbilities[slot] = ability != null ? ability.clone() : ability ;
 
-
-
     }
 
     public void swapAbilities(int slot1, int slot2){
@@ -90,11 +126,33 @@ public class OtherworldData implements Component<EntityStore> {
         if (slot < 0 || slot >= equippedAbilities.length){ return null; }
 
         return equippedAbilities[slot];
+    }
 
+    public void setEquippedAbilities(String[] _equippedAbilities){
+        for  (int i = 0; i < equippedAbilities.length; i++){
+            addAbility(_equippedAbilities[i], i);
+        }
+    }
+
+    public String[] getEquippedAbilityNames(){
+        String[] names = new String[equippedAbilities.length];
+        for (int i = 0; i < equippedAbilities.length; i++){
+            Ability ability = equippedAbilities[i];
+            names[i] =  ability != null ?  ability.name : null;
+        }
+        return names;
     }
 
     public List<Ability> getAbilityPool(){
         return abilityPool;
+    }
+
+    public void clearAbilities(){
+        Arrays.fill(equippedAbilities,null);
+        abilityPool.clear();
+    }
+    public  String getRaceName(){
+        return race != null ? race.getName() : null;
     }
 
     public Race getRace() {
@@ -111,8 +169,12 @@ public class OtherworldData implements Component<EntityStore> {
     }
 
     public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer) {
-        race.passiveTick(deltaTime,ref,playerRef,store,commandBuffer);
+        if (race != null){
+            race.passiveTick(deltaTime,ref,playerRef,store,commandBuffer);
+        }
+
         //TODO: will call ability passives here too
     }
+
 
 }

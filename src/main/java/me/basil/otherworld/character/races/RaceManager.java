@@ -17,16 +17,14 @@ public class RaceManager { // Implimentation choice: instead of sta
     private static final Map<String,Race> races = new HashMap<>();
 
     public static void registerRace(Race race){
-        races.put(race.getName(),race);
+        races.put(race.getName().toLowerCase(),race);
     }
 
 
     public static Race getRace(String raceName){
-        Race returnRace = races.get(raceName);
-        if (returnRace != null){
-            returnRace = returnRace.clone(); //THIS ONLY EVER GIVES COPIES OF THE RACES OUT
-        }
-        return  returnRace;
+        if (raceName == null){return null;}
+        Race returnRace = races.getOrDefault(raceName.toLowerCase(),null);
+        return  returnRace != null ? returnRace.clone() : null;
     }
 
     public static List<Race> getRaces(){

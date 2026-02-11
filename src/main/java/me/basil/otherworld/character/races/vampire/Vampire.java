@@ -27,7 +27,9 @@ import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntitySta
 import com.hypixel.hytale.server.core.modules.entitystats.asset.EntityStatType;
 import com.hypixel.hytale.server.core.modules.entitystats.modifier.Modifier;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
+import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
@@ -83,7 +85,6 @@ public class Vampire extends Race {
 
     @Override
     public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer) {
-
         flightLogic(deltaTime,ref,playerRef,store,commandBuffer);
         burnInSunlight(deltaTime,ref,playerRef,store,commandBuffer);
 
@@ -129,6 +130,12 @@ public class Vampire extends Race {
                 wasInSunlightLastTick = false;
             }
         }
+        MovementStatesComponent msc = store.getComponent(ref, MovementStatesComponent.getComponentType());
+        assert  msc != null;
+        if (msc.getMovementStates().crouching){
+
+        }
+
 
     }
 

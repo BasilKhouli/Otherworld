@@ -53,14 +53,10 @@ public abstract class Race {
     }
 
     public Ability getAbility(String abilityName) {
-        if (abilityName == null) {
-            return null;
-        }
-        abilityName = abilityName.toLowerCase();
-        if (!(abilities.containsKey(abilityName))) {
-            return null;
-        }
-        return abilities.get(abilityName);
+        if (abilityName == null) {return null;}
+        Ability ability = abilities.getOrDefault(abilityName.toLowerCase(),null);
+
+        return ability!= null ? ability.clone() : null ;
     }
 
     public Map<String, Ability> getAbilities() {

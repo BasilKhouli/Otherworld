@@ -30,6 +30,11 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
         assert otherworldData != null;
         if (otherworldData.getRace() == null) {return;}
 
+        if (!otherworldData.isInitalized){
+            otherworldData.initializeRace(playerRef);
+        }
+
+
 
 
         int newSelectedSlot = player.getInventory().getActiveHotbarSlot();

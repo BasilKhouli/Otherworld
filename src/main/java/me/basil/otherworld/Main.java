@@ -2,6 +2,7 @@ package me.basil.otherworld;
 
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -43,8 +44,11 @@ public class Main extends JavaPlugin {
 
 
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, (event) -> {
+
+
             Player player = event.getPlayer();
             World world = player.getWorld();
+            assert world != null;
             world.execute(() -> {
 
                 Ref<EntityStore> ref = event.getPlayerRef();
@@ -52,12 +56,11 @@ public class Main extends JavaPlugin {
                 PlayerRef playerRef = store.getComponent(ref,PlayerRef.getComponentType());
                 assert playerRef != null;
                 OtherworldData owData = store.ensureAndGetComponent(ref, OtherworldData.getComponentType());
-                //only temp till we add way to choose
-                owData.chooseRace("Vampire",playerRef);
 
             });
 
         });
+
 
     }
 
