@@ -28,11 +28,13 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
         assert player != null;
         OtherworldData otherworldData = store.getComponent(ref,OtherworldData.getComponentType());
         assert otherworldData != null;
-        if (otherworldData.getRace() == null) {return;}
-
         if (!otherworldData.isInitalized){
+            playerRef.sendMessage(Message.raw("initializing race"));
             otherworldData.initializeRace(playerRef);
         }
+        if (otherworldData.getRace() == null) {return;}
+
+
 
 
 

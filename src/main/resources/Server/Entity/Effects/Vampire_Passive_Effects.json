@@ -9,6 +9,21 @@
     ]
   },
   "Infinite": true,
-  "OverlapBehavior": "Extend",
-  "Invulnerable": false
+  "OverlapBehavior": "Ignore",
+  "Invulnerable": false,
+  "RawStatModifiers": {
+    "Health": [
+      {
+        "Amount": 0.75,
+        "CalculationType": "Multiplicative"
+      }
+    ],
+    "Mana": [
+      {
+        "Target": "Max",
+        "CalculationType": "Additive",
+        "Amount": 10
+      }
+    ]
+  }
 }

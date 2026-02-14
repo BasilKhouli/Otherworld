@@ -62,7 +62,7 @@ public class OtherworldData implements Component<EntityStore> {
 
 
         if (previousRaceBuffer != null){
-            race.removed(playerRef);
+            previousRaceBuffer.removed(playerRef);
         }
 
         if (race != null){
@@ -71,7 +71,6 @@ public class OtherworldData implements Component<EntityStore> {
             for (int i = 0;i < equippedAbilities.length;i++){
                 if (race.defaultEquippedAbilities[i] != null){
                     addAbility(race.defaultEquippedAbilities[i].name,i);
-                    playerRef.sendMessage(Message.raw(race.defaultEquippedAbilities[i].name+" "+i));
                 }
 
 

@@ -9,6 +9,7 @@ import com.hypixel.hytale.server.core.modules.entity.damage.Damage;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageCause;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageSystems;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
+import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.EntityStatType;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -42,9 +43,20 @@ public class Drain extends Ability {
             cooldown = 0;
         }
 
+        EntityStatMap statMap = commandBuffer.getComponent(ref, EntityStatMap.getComponentType());
+        assert statMap != null;
+        EntityStatValue currentMana = statMap.get(DefaultEntityStatTypes.getMana());
+        assert currentMana != null;
+        float costPerTick = 1f;
+        int attacksAvailable = (int) Math.max(1, -cooldown / attackCooldown + 1);
+        int maxAffordableAttacks = (int) (currentMana.get() / costPerTick);
+        int attacksToExecute = Math.min(attacksAvailable, maxAffordableAttacks);
 
-        if (currentCrouched){
-            for (int i = 0;i< (cooldown/-attackCooldown)+1;i++){
+        if (currentCrouched && cooldown<=0){
+
+            for (int i = 0;i< attacksToExecute;i++){
+
+
 
                 Ref<EntityStore> targetRef = TargetUtil.getTargetEntity(ref, commandBuffer);
                 if (targetRef != null && targetRef.isValid()) {
@@ -63,28 +75,30 @@ public class Drain extends Ability {
                             targetStatMap.subtractStatValue(staminaRDIndex, 2f);
                         }
 
-
-
-
                         float damageDone = damage.getAmount();
                         if (damageDone > 0){
                             float heal = damageDone * 0.40f;
 
-                            EntityStatMap statMap = commandBuffer.getComponent(ref, EntityStatMap.getComponentType());
-                            if (statMap != null) {
-                                int healthIndex = DefaultEntityStatTypes.getHealth();
-                                statMap.addStatValue(healthIndex, heal);
-                                int staminaIndex = DefaultEntityStatTypes.getStamina();
-                                statMap.addStatValue(staminaIndex, heal*2);
-                            }
+
+                            int healthIndex = DefaultEntityStatTypes.getHealth();
+                            statMap.addStatValue(healthIndex, heal);
+                            int staminaIndex = DefaultEntityStatTypes.getStamina();
+                            statMap.addStatValue(staminaIndex, heal*2);
+
 
                         }
 
+
+
                     }
-
+                    statMap.subtractStatValue(DefaultEntityStatTypes.getMana(), costPerTick);
+                    int ManaRegenDelayIndex =EntityStatType.getAssetMap().getIndex("ManaRegenDelay");
+                    EntityStatValue mtdValue = statMap.get(ManaRegenDelayIndex);
+                    if  (mtdValue == null || mtdValue.get()> costPerTick) {
+                        statMap.setStatValue(ManaRegenDelayIndex,costPerTick);
+                    }
+                    cooldown += attackCooldown;
                 }
-
-                cooldown += attackCooldown;
             }
         }
 
@@ -94,7 +108,6 @@ public class Drain extends Ability {
 
         wasCrouched = currentCrouched;
     }
-
 
     @Override
     public void unselected(Ref<EntityStore> ref, PlayerRef playerRef, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer) {

@@ -13,7 +13,9 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.character.races.RaceManager;
 import me.basil.otherworld.commands.OtherworldCommand;
 import me.basil.otherworld.components.OtherworldData;
+import me.basil.otherworld.systems.ManaRegenSystem;
 import me.basil.otherworld.systems.RaceSystem;
+import me.basil.otherworld.systems.StaminaRegenSystem;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,8 +41,10 @@ public class Main extends JavaPlugin {
         ComponentRegistryProxy<EntityStore> eSR =this.getEntityStoreRegistry();
         OWDcomponentType = eSR.registerComponent(OtherworldData.class,"OtherworldData",OtherworldData.CODEC);
 
-        eSR.registerSystem(new RaceSystem());
 
+        eSR.registerSystem(new RaceSystem());
+        eSR.registerSystem(new StaminaRegenSystem());
+        eSR.registerSystem(new ManaRegenSystem());
 
 
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, (event) -> {
