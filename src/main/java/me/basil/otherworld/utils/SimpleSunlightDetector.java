@@ -11,16 +11,10 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.function.predicate.TriIntObjPredicate;
 import com.hypixel.hytale.math.block.BlockConeUtil;
-import com.hypixel.hytale.math.block.BlockCubeUtil;
 import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.util.MathUtil;
 import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
-import com.hypixel.hytale.math.vector.Vector3i;
-import com.hypixel.hytale.protocol.Asset;
-import com.hypixel.hytale.protocol.BlockMaterial;
-import com.hypixel.hytale.protocol.ShaderType;
-import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
+import com.hypixel.hytale.server.core.asset.type.weather.config.TimeFloat;
 import com.hypixel.hytale.server.core.asset.type.weather.config.Weather;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
@@ -29,14 +23,12 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.BlockChunk;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.hypixel.hytale.server.core.util.TargetUtil;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SimpleSunlightDetector {
 
     private static final double MIN_SUNLIGHT_FACTOR = 0.1;
-    private static final int CHECK_HEIGHT = 32;
 
     public static boolean isExposedToSunlight(Ref<EntityStore> entityRef, Store<EntityStore> store) {
         TransformComponent transform = store.getComponent(entityRef, TransformComponent.getComponentType());
@@ -51,16 +43,44 @@ public class SimpleSunlightDetector {
         }
 
         WeatherTracker weatherTracker = store.getComponent(entityRef,WeatherTracker.getComponentType());
+        WorldTimeResource timeResource = store.getResource(WorldTimeResource.getResourceType());
+        double dayProgress = timeResource.getDayProgress();
+        float currentHour = (float) (dayProgress*WorldTimeResource.HOURS_PER_DAY);
+
 
         if (weatherTracker != null) {
             IndexedLookupTableAssetMap<String, Weather> weatherMap = Weather.getAssetMap();
 
             int envID = weatherTracker.getEnvironmentId();
             WeatherResource weatherResource = store.getResource(WeatherResource.getResourceType());
-            int weatherId = weatherResource.getWeatherIndexForEnvironment(envID);
+            int weatherId = weatherResource.getForcedWeatherIndex();
+            if (weatherId == 0) {
+                weatherId = weatherResource.getWeatherIndexForEnvironment(envID);
+            }
+
 
             AssetStore<String, Weather, ?> weatherAssetStore = AssetRegistry.getAssetStore(Weather.class);
             Weather currentWeather = weatherMap.getAsset(weatherId);
+            assert currentWeather != null;
+
+            TimeFloat[] sundampingmults = currentWeather.getSunlightDampingMultiplier();
+            if (sundampingmults != null){
+                float closestDiff = Float.MAX_VALUE;
+
+                float currentDamping = 1;
+                for (TimeFloat tf : sundampingmults) {
+                    float diff = Math.abs(tf.getHour() - currentHour);
+                    if (diff < closestDiff) {
+                        closestDiff = diff;
+                        currentDamping = tf.getValue();
+                    }
+                }
+                if (currentDamping < MIN_SUNLIGHT_FACTOR);{
+
+                }
+            }
+
+
 
             AssetCodec<String, Weather> codec = weatherAssetStore.getCodec();
             AssetExtraInfo.Data assetData = codec.getData(currentWeather);
@@ -111,6 +131,7 @@ public class SimpleSunlightDetector {
             if (blockChunk == null) {
                 return false;
             }
+
 
             int blockId = blockChunk.getBlock(bx & 31, by, bz & 31);
 
