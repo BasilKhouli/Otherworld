@@ -4,9 +4,7 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.protocol.*;
-import com.hypixel.hytale.protocol.packets.interaction.SyncInteractionChain;
 import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
 import com.hypixel.hytale.protocol.packets.world.SetChunk;
 import com.hypixel.hytale.server.core.Message;
@@ -17,23 +15,16 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
-import com.hypixel.hytale.server.core.io.PacketHandler;
-import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
-import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
-import com.hypixel.hytale.server.core.modules.entity.stamina.StaminaModule;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.EntityStatType;
 import com.hypixel.hytale.server.core.modules.entitystats.modifier.Modifier;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
-import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -48,7 +39,6 @@ import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntPredicate;
@@ -104,9 +94,11 @@ public class Vampire extends Race {
 
     }
 
-    private static final String SUNLIGHT_BURN_EFFECT_ID = "Sunlight_Burn";
-    //private boolean wasInSunlightLastTick = false;
+    private static final String SUNLIGHT_BURN_EFFECT_ID = "Vampire_Sunlight_Burn_Effect";
+    private static final String SMOKING_EFFECT_ID = "Vampire_Smoking_Effect";
+    private boolean isSmoking = false;
     private boolean startedBurning = false;
+    //private boolean wasInSunlightLastTick = false;
 
     private void burnInSunlight(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
 
@@ -162,6 +154,19 @@ public class Vampire extends Race {
             float cost = 1*deltaTime;
             float regenDelay = -1;
             if  (manaValue.get()>=cost) {
+                if (!isSmoking){
+                    if (!startedBurning) {
+                        EntityEffect smokeEffect = EntityEffect.getAssetMap().getAsset(SMOKING_EFFECT_ID);
+
+                        if (smokeEffect != null) {
+                            effectController.addEffect(ref, smokeEffect, commandBuffer);
+                        }
+                        isSmoking = true;
+                    }
+
+
+                }
+
                 statMap.subtractStatValue(DefaultEntityStatTypes.getMana(),cost);
                 int ManaRegenDelayIndex =EntityStatType.getAssetMap().getIndex("ManaRegenDelay");
                 EntityStatValue mtdValue = statMap.get(ManaRegenDelayIndex);
@@ -179,7 +184,7 @@ public class Vampire extends Race {
                     startedBurning = false;
                 }
             }
-            else{
+            else{ // out of stamina start burn
                 if (!startedBurning){
                     EntityEffect burnEffect = EntityEffect.getAssetMap().getAsset(SUNLIGHT_BURN_EFFECT_ID);
 
@@ -187,12 +192,27 @@ public class Vampire extends Race {
                         effectController.addEffect(ref, burnEffect, commandBuffer);
                     }
                     startedBurning = true;
+                    if (isSmoking) {
+                        int effectIndex = EntityEffect.getAssetMap().getIndex(SMOKING_EFFECT_ID);
+                        if (effectIndex != Integer.MIN_VALUE) {
+                            effectController.removeEffect(ref, effectIndex, commandBuffer);
+                        }
+                        isSmoking = false;
+                    }
+
                 }
             }
 
 
         }
         else  {
+            if (isSmoking) {
+                int effectIndex = EntityEffect.getAssetMap().getIndex(SMOKING_EFFECT_ID);
+                if (effectIndex != Integer.MIN_VALUE) {
+                    effectController.removeEffect(ref, effectIndex, commandBuffer);
+                }
+                isSmoking = false;
+            }
             if (startedBurning) {
                 int effectIndex = EntityEffect.getAssetMap().getIndex(SUNLIGHT_BURN_EFFECT_ID);
 

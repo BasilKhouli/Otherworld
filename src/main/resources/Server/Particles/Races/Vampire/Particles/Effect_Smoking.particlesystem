@@ -1,0 +1,9 @@
+{
+  "Spawners": [
+    {
+      "SpawnerId": "Vampire_Smoke_Particle_Spawner"
+    }
+  ],
+  "CullDistance": 100.0,
+  "IsImportant": true
+}

@@ -2,7 +2,6 @@ package me.basil.otherworld;
 
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -13,9 +12,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.character.races.RaceManager;
 import me.basil.otherworld.commands.OtherworldCommand;
 import me.basil.otherworld.components.OtherworldData;
-import me.basil.otherworld.systems.ManaRegenSystem;
 import me.basil.otherworld.systems.RaceSystem;
-import me.basil.otherworld.systems.StaminaRegenSystem;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,9 +40,6 @@ public class Main extends JavaPlugin {
 
 
         eSR.registerSystem(new RaceSystem());
-        eSR.registerSystem(new StaminaRegenSystem());
-        eSR.registerSystem(new ManaRegenSystem());
-
 
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, (event) -> {
 

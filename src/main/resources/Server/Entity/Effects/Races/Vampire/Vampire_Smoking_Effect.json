@@ -1,0 +1,15 @@
+{
+  "ApplicationEffects": {
+    "Particles": [
+      {
+        "SystemId": "Effect_Smoking",
+        "TargetNodeName": "Head",
+        "PositionOffset": {
+          "Y": 0.5
+        }
+      }
+    ]
+  },
+  "Infinite": true,
+  "StatusEffectIcon": "UI/Races/Vampire/Vampire_Sunlight_Warning.png"
+}
