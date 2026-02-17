@@ -1,15 +1,13 @@
 package me.basil.otherworld.character.races.vampire;
 
 import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.protocol.*;
 import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
 import com.hypixel.hytale.protocol.packets.world.SetChunk;
-import com.hypixel.hytale.server.core.Message;
-import com.hypixel.hytale.server.core.asset.type.entityeffect.config.EntityEffect;
-import com.hypixel.hytale.server.core.entity.effect.ActiveEntityEffect;
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
@@ -38,7 +36,6 @@ import me.basil.otherworld.utils.SimpleSunlightDetector;
 import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntPredicate;
@@ -79,26 +76,24 @@ public class Vampire extends Race {
     public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer) {
         flightLogic(deltaTime,ref,playerRef,store,commandBuffer);
         burnInSunlight(deltaTime,ref,playerRef,store,commandBuffer);
+        applyPassive(ref,store);
 
-        EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
-        assert effectController != null;
-        int vampEffectIndex = EntityEffect.getAssetMap().getIndex("Vampire_Passive_Effects");
-        EntityEffect vampirePassive = EntityEffect.getAssetMap().getAsset(vampEffectIndex);
-        ActiveEntityEffect[] activeEffects = effectController.getAllActiveEntityEffects();
-
-        if (vampirePassive != null && (activeEffects == null || Arrays.stream(activeEffects).noneMatch((activeEntityEffect -> activeEntityEffect.getEntityEffectIndex() == vampEffectIndex)))){
-            effectController.addEffect(ref, vampirePassive, store);
-        }
 
 
 
     }
 
+    private static final String PASSIVE_EFFECT_ID = "Vampire_Passive_Effect";
+
+    private void applyPassive(Ref<EntityStore> ref,Store<EntityStore> store){
+        EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
+        assert effectController != null;
+        addEffect(PASSIVE_EFFECT_ID,ref,store,effectController);
+    }
     private static final String SUNLIGHT_BURN_EFFECT_ID = "Vampire_Sunlight_Burn_Effect";
     private static final String SMOKING_EFFECT_ID = "Vampire_Smoking_Effect";
     private boolean isSmoking = false;
     private boolean startedBurning = false;
-    //private boolean wasInSunlightLastTick = false;
 
     private void burnInSunlight(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
 
@@ -117,36 +112,6 @@ public class Vampire extends Race {
         ItemStack helmet = player.getInventory().getArmor().getItemStack((short) 0);
 
         boolean isExposedToSunlight = SimpleSunlightDetector.isExposedToSunlight(ref,store) && (helmet == null || helmet.isEmpty()); //SunlightDetector.isExposedToSunlight(ref, store);
-        /*
-        if (isExposedToSunlight) {
-
-            if (!wasInSunlightLastTick) {
-                EntityEffect burnEffect = EntityEffect.getAssetMap().getAsset(SUNLIGHT_BURN_EFFECT_ID);
-
-                if (burnEffect != null) {
-                    effectController.addEffect(ref, burnEffect, commandBuffer);
-                }
-
-                wasInSunlightLastTick = true;
-            }
-
-        } else {
-            if (wasInSunlightLastTick) {
-                int effectIndex = EntityEffect.getAssetMap().getIndex(SUNLIGHT_BURN_EFFECT_ID);
-
-                if (effectIndex != Integer.MIN_VALUE) {
-                    effectController.removeEffect(ref, effectIndex, commandBuffer);
-                }
-
-                wasInSunlightLastTick = false;
-            }
-        }
-        MovementStatesComponent msc = store.getComponent(ref, MovementStatesComponent.getComponentType());
-        assert  msc != null;
-        if (msc.getMovementStates().crouching){
-
-        }
-         */
 
         if (isExposedToSunlight) {
             EntityStatValue manaValue = statMap.get(DefaultEntityStatTypes.getMana());
@@ -156,11 +121,7 @@ public class Vampire extends Race {
             if  (manaValue.get()>=cost) {
                 if (!isSmoking){
                     if (!startedBurning) {
-                        EntityEffect smokeEffect = EntityEffect.getAssetMap().getAsset(SMOKING_EFFECT_ID);
-
-                        if (smokeEffect != null) {
-                            effectController.addEffect(ref, smokeEffect, commandBuffer);
-                        }
+                        addEffect(SMOKING_EFFECT_ID,ref,commandBuffer,effectController);
                         isSmoking = true;
                     }
 
@@ -175,28 +136,16 @@ public class Vampire extends Race {
                 }
 
                 if (startedBurning) {
-                    int effectIndex = EntityEffect.getAssetMap().getIndex(SUNLIGHT_BURN_EFFECT_ID);
-
-                    if (effectIndex != Integer.MIN_VALUE) {
-                        effectController.removeEffect(ref, effectIndex, commandBuffer);
-                    }
-
+                    removeEffect(SUNLIGHT_BURN_EFFECT_ID,ref,commandBuffer,effectController);
                     startedBurning = false;
                 }
             }
             else{ // out of stamina start burn
                 if (!startedBurning){
-                    EntityEffect burnEffect = EntityEffect.getAssetMap().getAsset(SUNLIGHT_BURN_EFFECT_ID);
-
-                    if (burnEffect != null) {
-                        effectController.addEffect(ref, burnEffect, commandBuffer);
-                    }
+                    addEffect(SUNLIGHT_BURN_EFFECT_ID,ref,commandBuffer,effectController);
                     startedBurning = true;
                     if (isSmoking) {
-                        int effectIndex = EntityEffect.getAssetMap().getIndex(SMOKING_EFFECT_ID);
-                        if (effectIndex != Integer.MIN_VALUE) {
-                            effectController.removeEffect(ref, effectIndex, commandBuffer);
-                        }
+                        removeEffect(SMOKING_EFFECT_ID,ref,commandBuffer,effectController);
                         isSmoking = false;
                     }
 
@@ -207,19 +156,11 @@ public class Vampire extends Race {
         }
         else  {
             if (isSmoking) {
-                int effectIndex = EntityEffect.getAssetMap().getIndex(SMOKING_EFFECT_ID);
-                if (effectIndex != Integer.MIN_VALUE) {
-                    effectController.removeEffect(ref, effectIndex, commandBuffer);
-                }
+                removeEffect(SMOKING_EFFECT_ID,ref,commandBuffer,effectController);
                 isSmoking = false;
             }
             if (startedBurning) {
-                int effectIndex = EntityEffect.getAssetMap().getIndex(SUNLIGHT_BURN_EFFECT_ID);
-
-                if (effectIndex != Integer.MIN_VALUE) {
-                    effectController.removeEffect(ref, effectIndex, commandBuffer);
-                }
-
+                removeEffect(SUNLIGHT_BURN_EFFECT_ID,ref,commandBuffer,effectController);
                 startedBurning = false;
             }
         }
@@ -227,6 +168,7 @@ public class Vampire extends Race {
 
     }
 
+    private static final String BAT_TRANSFORMATION_EFFECT_ID = "Vampire_Bat_Transformation";
     private boolean isInFlight;
     //private Model playerModel;
     private void flightLogic(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
@@ -255,32 +197,13 @@ public class Vampire extends Race {
             movementManager.getSettings().canFly = true;
         }
 
-
+        EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
+        assert effectController != null;
         if (movementStatesComponent.getMovementStates().flying){
 
             if (!isInFlight){
                 isInFlight = true;
-                EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
-                assert effectController != null;
-                EntityEffect transformEffect = EntityEffect.getAssetMap().getAsset("Vampire_Bat_Transformation");
-                if (transformEffect != null){
-                    effectController.addEffect(ref, transformEffect, commandBuffer);
-                }
-
-
-                /*
-                ModelComponent modelComponent = store.getComponent(ref, ModelComponent.getComponentType());
-                assert modelComponent != null;
-
-                ModelAsset batAsset = ModelAsset.getAssetMap().getAsset("Vampire_Bat");
-                if (batAsset != null){
-                    playerModel = modelComponent.getModel();
-                    Model batModel = Model.createScaledModel(batAsset,batAsset.getMinScale());
-                    ModelComponent newModelComp = new ModelComponent(batModel);
-                    commandBuffer.replaceComponent(ref,ModelComponent.getComponentType(),newModelComp);
-                    //playerRef.sendMessage(Message.raw(modelComponent.getModel().toString()));
-                }
-                */
+                addEffect(BAT_TRANSFORMATION_EFFECT_ID,ref,commandBuffer,effectController);
             }
             //Drains Stamina
 
@@ -308,26 +231,7 @@ public class Vampire extends Race {
         else {
             if (isInFlight){
                 isInFlight = false;
-                EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
-                assert effectController != null;
-
-                int effectIndex = EntityEffect.getAssetMap().getIndex("Vampire_Bat_Transformation");
-
-                if (effectIndex != Integer.MIN_VALUE) {
-                    effectController.removeEffect(ref, effectIndex, commandBuffer);
-                }
-                /*
-                if (playerModel != null){
-
-
-                    commandBuffer.replaceComponent(ref,ModelComponent.getComponentType(),new ModelComponent(playerModel));
-                    PlayerSkinComponent playerSkinComponent = store.getComponent(ref, PlayerSkinComponent.getComponentType());
-                    if (playerSkinComponent != null) {
-                        playerSkinComponent.setNetworkOutdated();
-                    }
-                    playerModel = null;
-                }
-                */
+                removeEffect(BAT_TRANSFORMATION_EFFECT_ID,ref,commandBuffer,effectController);
             }
         }
 
@@ -337,43 +241,54 @@ public class Vampire extends Race {
     public boolean hasDarkVision = false;
 
     @Override
-    public void initialize(PlayerRef playerRef) {
-        super.initialize(playerRef);
+    public void initialize(PlayerRef playerRef, ComponentAccessor<EntityStore> componentAccessor) {
+        super.initialize(playerRef, componentAccessor);
+        reloadChunks(playerRef);
         DarkVisionPacketSetUp(playerRef);
 
     }
 
     @Override
-    public void removed(PlayerRef playerRef) {
-        playerRef.sendMessage(Message.raw("Removed Vampire"));
-        super.removed(playerRef);
+    public void removed(PlayerRef playerRef, ComponentAccessor<EntityStore> componentAccessor) {
+        super.removed(playerRef, componentAccessor);
         Ref<EntityStore> ref = playerRef.getReference();
 
-
         assert ref != null;
-        Store<EntityStore> store = ref.getStore();
 
         //clear passive
+
+        /*
         EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
         assert effectController != null;
-        int effectIndex = EntityEffect.getAssetMap().getIndex("Vampire_Passive_Effects");
-        if (effectIndex != Integer.MIN_VALUE) {
-            effectController.removeEffect(ref, effectIndex, store);
+        int passiveIndex = EntityEffect.getAssetMap().getIndex(PASSIVE_EFFECT_ID);
+        if (passiveIndex != Integer.MIN_VALUE) {
+            effectController.removeEffect(ref, passiveIndex, store);
         }
 
         //clear flight effects
-        int batTransformIndex = EntityEffect.getAssetMap().getIndex("Vampire_Bat_Transformation");
+        int batTransformIndex = EntityEffect.getAssetMap().getIndex(BAT_TRANSFORMATION_EFFECT_ID);
         if (batTransformIndex != Integer.MIN_VALUE) {
             effectController.removeEffect(ref, batTransformIndex, store);
         }
+
+        //clear burn
+        int burnIndex = EntityEffect.getAssetMap().getIndex(SUNLIGHT_BURN_EFFECT_ID);
+        if (burnIndex != Integer.MIN_VALUE) {
+            effectController.removeEffect(ref, burnIndex, store);
+        }
+        int smokeIndex = EntityEffect.getAssetMap().getIndex(SMOKING_EFFECT_ID);
+        if (smokeIndex != Integer.MIN_VALUE) {
+            effectController.removeEffect(ref, smokeIndex, store);
+        }
+         */
         
         //disable flight
-        MovementManager movementManager = store.getComponent(ref, MovementManager.getComponentType());
+        MovementManager movementManager = componentAccessor.getComponent(ref, MovementManager.getComponentType());
         if (movementManager != null) {
             movementManager.getSettings().canFly = false;
             movementManager.update(playerRef.getPacketHandler());
         }
-        MovementStatesComponent movementStatesComponent = store.getComponent(ref, MovementStatesComponent.getComponentType());
+        MovementStatesComponent movementStatesComponent = componentAccessor.getComponent(ref, MovementStatesComponent.getComponentType());
         if (movementStatesComponent != null) {
             movementStatesComponent.getMovementStates().flying = false;
             playerRef.getPacketHandler().writeNoCache(new SetMovementStates(new SavedMovementStates(false)));

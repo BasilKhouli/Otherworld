@@ -16,6 +16,9 @@ import me.basil.otherworld.components.OtherworldData;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RaceSystem extends EntityTickingSystem<EntityStore> {
 
 
@@ -29,7 +32,7 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
         OtherworldData otherworldData = store.getComponent(ref,OtherworldData.getComponentType());
         assert otherworldData != null;
         if (!otherworldData.isInitalized){
-            otherworldData.initializeRace(playerRef);
+            otherworldData.initializeRace(playerRef,commandBuffer);
         }
         if (otherworldData.getRace() == null) {return;}
 
@@ -81,6 +84,6 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
 
     @Override
     public @Nullable Query<EntityStore> getQuery() {
-        return Query.and(OtherworldData.getComponentType());//Integrates on all players with the OtherWorldData.Component
+        return Query.and(PlayerRef.getComponentType(),OtherworldData.getComponentType());//Integrates on all players with the OtherWorldData.Component
     }
 }

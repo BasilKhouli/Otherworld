@@ -35,8 +35,8 @@ public class RaceManager { // Implimentation choice: instead of sta
 
         registerRace(new Vampire());
         //TODO: register these when they are set up properly
-        /*
         registerRace(new Werewolf());
+        /*
         registerRace(new Fiend());
         registerRace(new Merefolk());
         registerRace(new Spiritborn());

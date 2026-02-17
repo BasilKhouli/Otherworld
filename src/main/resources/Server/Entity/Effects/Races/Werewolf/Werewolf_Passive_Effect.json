@@ -1,0 +1,19 @@
+{
+  "Infinite": true,
+  "RawStatModifiers": {
+    "Mana": [
+      {
+        "Target": "Max",
+        "CalculationType": "Additive",
+        "Amount": 5
+      }
+    ],
+    "Stamina": [
+      {
+        "Target": "Max",
+        "CalculationType": "Additive",
+        "Amount": 5
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "Infinite": true,
+  "RawStatModifiers": {
+    "Mana": [
+      {
+        "Target": "Max",
+        "CalculationType": "Multiplicative",
+        "Amount": 0.5
+      }
+    ],
+    "Health": [
+      {
+        "CalculationType": "Multiplicative",
+        "Amount": 2
+      }
+    ],
+    "Stamina": [
+      {
+        "Target": "Max",
+        "CalculationType": "Multiplicative",
+        "Amount": 1.5
+      }
+    ]
+  },
+  "ModelChange": "Werewolf_Transformation"
+}

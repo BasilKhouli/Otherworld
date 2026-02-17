@@ -3,7 +3,6 @@ package me.basil.otherworld.components;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.*;
-import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.Main;
@@ -58,15 +57,15 @@ public class OtherworldData implements Component<EntityStore> {
 
     }
 
-    public void initializeRace(PlayerRef playerRef){
+    public void initializeRace(PlayerRef playerRef,ComponentAccessor<EntityStore> componentAccessor){
 
 
         if (previousRaceBuffer != null){
-            previousRaceBuffer.removed(playerRef);
+            previousRaceBuffer.removed(playerRef,componentAccessor);
         }
 
         if (race != null){
-            race.initialize(playerRef);
+            race.initialize(playerRef,componentAccessor);
 
             for (int i = 0;i < equippedAbilities.length;i++){
                 if (race.defaultEquippedAbilities[i] != null){
@@ -174,6 +173,8 @@ public class OtherworldData implements Component<EntityStore> {
 
         //TODO: will call ability passives here too
     }
+
+
 
 
 }
