@@ -38,6 +38,7 @@ import org.jspecify.annotations.NonNull;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.function.IntPredicate;
 
 public class Vampire extends Race {
@@ -255,33 +256,6 @@ public class Vampire extends Race {
 
         assert ref != null;
 
-        //clear passive
-
-        /*
-        EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
-        assert effectController != null;
-        int passiveIndex = EntityEffect.getAssetMap().getIndex(PASSIVE_EFFECT_ID);
-        if (passiveIndex != Integer.MIN_VALUE) {
-            effectController.removeEffect(ref, passiveIndex, store);
-        }
-
-        //clear flight effects
-        int batTransformIndex = EntityEffect.getAssetMap().getIndex(BAT_TRANSFORMATION_EFFECT_ID);
-        if (batTransformIndex != Integer.MIN_VALUE) {
-            effectController.removeEffect(ref, batTransformIndex, store);
-        }
-
-        //clear burn
-        int burnIndex = EntityEffect.getAssetMap().getIndex(SUNLIGHT_BURN_EFFECT_ID);
-        if (burnIndex != Integer.MIN_VALUE) {
-            effectController.removeEffect(ref, burnIndex, store);
-        }
-        int smokeIndex = EntityEffect.getAssetMap().getIndex(SMOKING_EFFECT_ID);
-        if (smokeIndex != Integer.MIN_VALUE) {
-            effectController.removeEffect(ref, smokeIndex, store);
-        }
-         */
-        
         //disable flight
         MovementManager movementManager = componentAccessor.getComponent(ref, MovementManager.getComponentType());
         if (movementManager != null) {
@@ -297,7 +271,6 @@ public class Vampire extends Race {
         //clear full bright
         playerRef.getPacketHandler().getChannel().pipeline().remove("Vampire_FullBright");
         reloadChunks(playerRef);
-
     }
 
     //region Brightness Packet stuff

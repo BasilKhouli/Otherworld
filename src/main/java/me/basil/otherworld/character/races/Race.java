@@ -17,7 +17,9 @@ public abstract class Race {
     private final String name; // technically better practice for this to be private with a getter so changed it to that but does not matter IG
     private final Map<String,Ability> abilities = new HashMap<>();
     private final Map<String, Modifier> modifiers;
-    public List<String> appliedEffectIDs = new ArrayList<>();
+    private final List<String> appliedEffectIDs = new ArrayList<>();
+    protected final Map<String,Runnable> removalCallbacks = new HashMap<>();
+
 
     public Ability[] defaultEquippedAbilities;
 
@@ -79,6 +81,12 @@ public abstract class Race {
         for (String effectID : appliedEffectIDs.stream().toList()){
             removeEffect(effectID,ref,componentAccessor,effectController);
         }
+        appliedEffectIDs.clear();
+        for (Map.Entry<String, Runnable> entry : removalCallbacks.entrySet()){
+            entry.getValue().run();
+        }
+        removalCallbacks.clear();
+
     }
 
     protected void addEffect(String effectID, Ref<EntityStore> ref, ComponentAccessor<EntityStore> componentAccessor, EffectControllerComponent effectController ){

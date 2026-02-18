@@ -6,10 +6,12 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
+import com.hypixel.hytale.server.core.modules.entity.player.PlayerInput;
 import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.NotificationUtil;
+import com.hypixel.hytale.server.npc.NPCPlugin;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
 import me.basil.otherworld.utils.TimeOfDayUtil;
@@ -55,6 +57,15 @@ public class Werewolf extends Race {
             }
 
         }
+
+        if (curseActive){
+            //commandBuffer.removeComponent(ref, PlayerInput.getComponentType());
+        }
+        else{
+            //commandBuffer.ensureAndGetComponent(ref, PlayerInput.getComponentType());
+        }
+
+
 
 
     }

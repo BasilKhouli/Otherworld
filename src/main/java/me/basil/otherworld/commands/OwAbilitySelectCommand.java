@@ -3,6 +3,7 @@ package me.basil.otherworld.commands;
 import com.hypixel.hytale.common.util.StringUtil;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.CommandUtil;
@@ -28,9 +29,11 @@ public class OwAbilitySelectCommand extends AbstractPlayerCommand{
 
     public OwAbilitySelectCommand() {
         super("ability", "Equip an ability");
+        setPermissionGroup(GameMode.Adventure);
         addAliases("a");
         abilityArg = withRequiredArg("Ability", "name of the ability to equip", ArgTypes.STRING);
         slotArg = withOptionalArg("slot", "Slot to equip to",ArgTypes.INTEGER);
+
     }
 
     @Override

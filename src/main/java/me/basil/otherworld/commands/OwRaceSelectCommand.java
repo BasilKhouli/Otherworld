@@ -2,6 +2,7 @@ package me.basil.otherworld.commands;
 
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
@@ -21,6 +22,7 @@ public class OwRaceSelectCommand extends AbstractPlayerCommand {
 
     public OwRaceSelectCommand() {
         super("race", "Choose a race");
+        setPermissionGroup(GameMode.Adventure);
         addAliases("r");
         raceArg = withRequiredArg("Race", "Name of the race to choose", new RaceArgumentType());
         addSubCommand(new OwRaceClearCommand());
