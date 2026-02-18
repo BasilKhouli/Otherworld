@@ -19,12 +19,6 @@ dependencies {
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.jspecify)
 }
-dependencies {
-    compileOnly(files(
-        System.getenv("HYTALE_DECOMPILED")
-            ?: "${System.getProperty("user.home")}\\AppData\\Local\\Hytale-Toolkit\\decompiled"
-    ))
-}
 
 hytale {
     // uncomment if you want to add the Assets.zip file to your external libraries;
