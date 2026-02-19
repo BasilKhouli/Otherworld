@@ -4,7 +4,6 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
-import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.entity.damage.Damage;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageCause;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageSystems;
@@ -19,7 +18,7 @@ import me.basil.otherworld.character.races.Ability;
 
 public class Drain extends Ability {
     public Drain() {
-        super("Drain"," Shift to drain health and stamina from a target",new ItemStack("Potion_Health_Small"));
+        super("Drain","Drain health and stamina from a target","Crouch while looking at a target to drain them");
     }
 
     MovementStatesComponent movementStatesComponent;

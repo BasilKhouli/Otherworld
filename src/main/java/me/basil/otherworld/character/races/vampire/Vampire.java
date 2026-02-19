@@ -48,16 +48,11 @@ public class Vampire extends Race {
                 new Drain(),
                 new DarkSightToggle()
 
-                //TODO
 
         );
 
-        Map<String, Modifier> raceModifiers = Map.of(
-                //TODO
-        );
 
-
-        super("Vampire", raceAbilities, raceModifiers,null);
+        super("Vampire", "A creature of the night with supernatural powers and a thirst for blood", raceAbilities,null);
 
     }
 
@@ -239,7 +234,7 @@ public class Vampire extends Race {
         movementManager.update(playerRef.getPacketHandler());
     }
 
-    public boolean hasDarkVision = false;
+
 
     @Override
     public void initialize(PlayerRef playerRef, ComponentAccessor<EntityStore> componentAccessor) {
@@ -274,6 +269,8 @@ public class Vampire extends Race {
     }
 
     //region Brightness Packet stuff
+
+    public boolean hasDarkVision = false;
     private void DarkVisionPacketSetUp(PlayerRef playerRef){
         final ChannelOutboundHandlerAdapter fullBrightHandler = new ChannelOutboundHandlerAdapter() {
             @Override

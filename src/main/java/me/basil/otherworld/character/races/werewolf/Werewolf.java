@@ -22,7 +22,7 @@ import java.util.*;
 public class Werewolf extends Race {
 
     public Werewolf() {
-        super("Werewolf", new ArrayList<>(), new HashMap<>(), new Ability[9]);
+        super("Werewolf", "A human cursed to transform into a beast under the full moon", new ArrayList<>(), new Ability[9]);
     }
 
     private static final String passiveID = "Werewolf_Passive_Effect";

@@ -31,16 +31,18 @@ public class OwAbilitySelectCommand extends AbstractPlayerCommand{
         super("ability", "Equip an ability");
         setPermissionGroup(GameMode.Adventure);
         addAliases("a");
-        abilityArg = withRequiredArg("Ability", "name of the ability to equip", ArgTypes.STRING);
-        slotArg = withOptionalArg("slot", "Slot to equip to",ArgTypes.INTEGER);
+        abilityArg = withRequiredArg("Ability", "The name of the ability to equip", ArgTypes.STRING);
+        slotArg = withOptionalArg("slot", "The slot to equip to",ArgTypes.INTEGER);
+        addSubCommand(new OwAbilityListCommand());
+        addSubCommand(new OwAbilityHelpCommand());
 
     }
 
     @Override
     protected void execute(@NonNull CommandContext commandContext, @NonNull Store<EntityStore> store, @NonNull Ref<EntityStore> ref, @NonNull PlayerRef playerRef, @NonNull World world) {
         OtherworldData owd = store.getComponent(ref,OtherworldData.getComponentType());
-        if (owd == null) {
-            commandContext.sendMessage(Message.raw("An error occurred! Rejoin the server and try again, if the problem persist report to devs").color(Color.red));
+        if (owd == null ||owd.getRace() == null) {
+            commandContext.sendMessage(Message.raw("Humans have no abilities"));
             return;
         }
 
@@ -53,12 +55,7 @@ public class OwAbilitySelectCommand extends AbstractPlayerCommand{
 
         String abilityName = abilityArg.get(commandContext);
         String lowerCaseAbilityName = abilityName.toLowerCase();
-
         Race race = owd.getRace();
-        if (race == null){
-            commandContext.sendMessage(Message.raw("Must have a race to use abilities").color(Color.red));
-            return;
-        }
 
         Ability ability = race.getAbility(lowerCaseAbilityName);
 

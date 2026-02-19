@@ -24,8 +24,9 @@ public class OwRaceSelectCommand extends AbstractPlayerCommand {
         super("race", "Choose a race");
         setPermissionGroup(GameMode.Adventure);
         addAliases("r");
-        raceArg = withRequiredArg("Race", "Name of the race to choose", new RaceArgumentType());
+        raceArg = withRequiredArg("Race", "The name of the race to choose", new RaceArgumentType());
         addSubCommand(new OwRaceClearCommand());
+        addSubCommand(new OwRaceListCommand());
     }
 
     @Override
@@ -44,4 +45,5 @@ public class OwRaceSelectCommand extends AbstractPlayerCommand {
         owd.chooseRace(selectedRace.getName());
         commandContext.sendMessage(Message.raw("You selected race: " + selectedRace.getName()));
     }
+
 }

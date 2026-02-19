@@ -15,8 +15,8 @@ import java.util.*;
 
 public abstract class Race {
     private final String name; // technically better practice for this to be private with a getter so changed it to that but does not matter IG
+    private final String description;
     private final Map<String,Ability> abilities = new HashMap<>();
-    private final Map<String, Modifier> modifiers;
     private final List<String> appliedEffectIDs = new ArrayList<>();
     protected final Map<String,Runnable> removalCallbacks = new HashMap<>();
 
@@ -24,14 +24,14 @@ public abstract class Race {
     public Ability[] defaultEquippedAbilities;
 
 
-    public Race(String raceName, List<Ability> raceAbilities, Map<String, Modifier> raceModifiers, Ability[] raceDefaultEquippedAbilities) {
+    public Race(String raceName, String raceDescription, List<Ability> raceAbilities, Ability[] raceDefaultEquippedAbilities) {
         name = raceName;
+        description = raceDescription;
 
         for (Ability ability : raceAbilities) {
             registerAbility(ability);
         }
-        modifiers = raceModifiers;
-        defaultEquippedAbilities = raceDefaultEquippedAbilities;
+                defaultEquippedAbilities = raceDefaultEquippedAbilities;
         if (defaultEquippedAbilities == null) {
             defaultEquippedAbilities = new Ability[9];
             List<Ability> listOfAbilities = abilities.values().stream().toList();
@@ -46,6 +46,10 @@ public abstract class Race {
 
     public String getName() {
         return name;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     abstract public Race clone();

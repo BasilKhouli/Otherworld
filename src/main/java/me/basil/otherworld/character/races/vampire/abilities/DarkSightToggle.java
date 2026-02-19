@@ -7,7 +7,6 @@ import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.protocol.packets.interaction.SyncInteractionChain;
 import com.hypixel.hytale.server.core.Message;
-import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.io.PacketHandler;
 import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
 import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
@@ -22,7 +21,7 @@ import java.util.Deque;
 
 public class DarkSightToggle extends Ability {
 	public DarkSightToggle() {
-        super("Dark_Sight_Toggle","look up or down to set the brightness of Darksight,look down to disable ",new ItemStack("Ingredient_Lightning_Essence"));
+        super("Dark_Sight_Toggle","Configure Dark Sight","press the USE key to toggle Dark Sight");
     }
 
     @Override
