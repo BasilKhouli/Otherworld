@@ -42,27 +42,23 @@ public class DarkSightToggle extends Ability {
         if (ph instanceof GamePacketHandler gph){
 
             Deque<SyncInteractionChain> packets = gph.getInteractionPacketQueue();
+
+
+
+
             for (SyncInteractionChain packet : packets) {//Mostly for debug all will be replaced with proper ways to set later
                 if (packet.interactionType == InteractionType.Use && packet.initial){
-
-                    HeadRotation headRotation = store.getComponent(ref, HeadRotation.getComponentType());
-                    assert headRotation != null;
-                    Vector3f rotation = headRotation.getRotation();
-                    float pitch = rotation.x;
-                    float normalizedPitch = (pitch + (float)Math.PI/2) / (float)Math.PI;
-
-                    vampireRace.brightnessLevel = (int) (normalizedPitch * 15f);
-                    vampireRace.hasDarkVision = vampireRace.brightnessLevel > 3;
-
+                    vampireRace.hasDarkVision = !vampireRace.hasDarkVision;
 
                     EventTitleUtil.hideEventTitleFromPlayer(playerRef, 0);
                     String outString = vampireRace.hasDarkVision ? "Enabled" : "Disabled";
-                    EventTitleUtil.showEventTitleToPlayer(playerRef, Message.raw(outString),Message.raw("Dark Vision:"),false,null,2,0,1);
-                    vampireRace.reloadChunks(playerRef);
+                    playerRef.sendMessage(Message.raw(outString));
+                    //EventTitleUtil.showEventTitleToPlayer(playerRef, Message.raw(outString),Message.raw("Dark Vision:"),false,null,2,0,1);
+
                     break;
                 }
-                //playerRef.sendMessage(Message.raw("Packet: " + packet.getClass().getSimpleName()));
             }
+
 
         }
 

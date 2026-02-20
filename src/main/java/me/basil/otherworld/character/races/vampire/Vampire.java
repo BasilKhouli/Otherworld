@@ -1,18 +1,24 @@
 package me.basil.otherworld.character.races.vampire;
 
+import com.hypixel.hytale.assetstore.map.BlockTypeAssetMap;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.*;
 import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
+import com.hypixel.hytale.protocol.packets.world.ServerSetBlock;
+import com.hypixel.hytale.protocol.packets.world.ServerSetBlocks;
 import com.hypixel.hytale.protocol.packets.world.SetChunk;
+import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
@@ -70,9 +76,79 @@ public class Vampire extends Race {
 
     @Override
     public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer) {
-        flightLogic(deltaTime,ref,playerRef,store,commandBuffer);
-        burnInSunlight(deltaTime,ref,playerRef,store,commandBuffer);
+        World world = store.getExternalData().getWorld();
+
         applyPassive(ref,store);
+
+        flightLogic(deltaTime,ref,playerRef,store,commandBuffer);
+
+        burnInSunlight(deltaTime,ref,playerRef,store,commandBuffer);
+        world.execute(()->
+                darkSightPassive(ref,playerRef,store,commandBuffer));
+
+    }
+    Vector3i fauxTorch;
+    private void darkSightPassive(Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
+        World world = commandBuffer.getExternalData().getWorld();
+        if (!hasDarkVision){
+            if (fauxTorch != null){
+                ServerSetBlock blockPacket = new ServerSetBlock();
+
+                blockPacket.x = fauxTorch.getX();
+                blockPacket.y = fauxTorch.getY();
+                blockPacket.z = fauxTorch.getZ();
+                blockPacket.blockId = 0;
+
+                playerRef.getPacketHandler().writeNoCache(blockPacket);
+                fauxTorch = null;
+            }
+
+            return;
+        }
+
+        TransformComponent transformComponent = store.getComponent(ref,TransformComponent.getComponentType());
+        assert transformComponent != null;
+        Vector3d position = transformComponent.getPosition().clone();
+        float headHeight = 0;
+        ModelComponent modelComponent = store.getComponent(ref, ModelComponent.getComponentType());
+        if (modelComponent != null) {
+            headHeight += modelComponent.getModel().getEyeHeight(ref,store);
+        }
+        Vector3d headPostion = new  Vector3d(position.getX(), position.getY()+headHeight, position.getZ());
+
+        Vector3i blockPosition = headPostion.toVector3i();
+
+
+        var blockAtHead = world.getBlock(blockPosition);
+
+        if (blockAtHead != 0) {
+            return;
+        }
+
+        if (fauxTorch != blockPosition) {
+
+            if (fauxTorch != null) {
+                ServerSetBlock blockPacket = new ServerSetBlock();
+
+                blockPacket.x = fauxTorch.getX();
+                blockPacket.y = fauxTorch.getY();
+                blockPacket.z = fauxTorch.getZ();
+                blockPacket.blockId = 0;
+
+                playerRef.getPacketHandler().writeNoCache(blockPacket);
+                fauxTorch = null;
+            }
+
+            int torchID = BlockType.getAssetMap().getIndex("Furniture_Crude_Torch");
+            ServerSetBlock blockPacket = new ServerSetBlock();
+            blockPacket.x = blockPosition.getX();
+            blockPacket.y = blockPosition.getY();
+            blockPacket.z = blockPosition.getZ();
+            blockPacket.blockId = torchID;
+
+            playerRef.getPacketHandler().writeNoCache(blockPacket);
+            fauxTorch = blockPosition;
+        }
 
 
 
@@ -239,8 +315,8 @@ public class Vampire extends Race {
     @Override
     public void initialize(PlayerRef playerRef, ComponentAccessor<EntityStore> componentAccessor) {
         super.initialize(playerRef, componentAccessor);
-        reloadChunks(playerRef);
-        DarkVisionPacketSetUp(playerRef);
+        //reloadChunks(playerRef);
+        //DarkVisionPacketSetUp(playerRef);
 
     }
 
@@ -265,7 +341,7 @@ public class Vampire extends Race {
 
         //clear full bright
         playerRef.getPacketHandler().getChannel().pipeline().remove("Vampire_FullBright");
-        reloadChunks(playerRef);
+        //reloadChunks(playerRef);
     }
 
     //region Brightness Packet stuff

@@ -42,14 +42,21 @@ public class Drain extends Ability {
             cooldown = 0;
         }
 
+        final float costPerTick = 1f;
+        final float manaRegenDelay = -0.3f;
+        final float appliedStaminaRegenDelay = -0.5f;
+        final float tickDamage = 0.5f;
+        final float staminaDrain = 1f;
+
         EntityStatMap statMap = commandBuffer.getComponent(ref, EntityStatMap.getComponentType());
         assert statMap != null;
         EntityStatValue currentMana = statMap.get(DefaultEntityStatTypes.getMana());
         assert currentMana != null;
-        float costPerTick = 1f;
-        int attacksAvailable = (int) Math.max(1, -cooldown / attackCooldown + 1);
-        int maxAffordableAttacks = (int) (currentMana.get() / costPerTick);
-        int attacksToExecute = Math.min(attacksAvailable, maxAffordableAttacks);
+
+
+        final int attacksAvailable = (int) Math.max(1, -cooldown / attackCooldown + 1);
+        final int maxAffordableAttacks = (int) (currentMana.get() / costPerTick);
+        final int attacksToExecute = Math.min(attacksAvailable, maxAffordableAttacks);
 
         if (currentCrouched && cooldown<=0){
 
@@ -64,14 +71,16 @@ public class Drain extends Ability {
                     DamageCause cause = DamageCause.getAssetMap().getAsset("Command");
 
                     if  (cause != null) {
-                        Damage damage = new Damage(source, cause, 0.5f);
+                        Damage damage = new Damage(source, cause, tickDamage);
                         DamageSystems.executeDamage(targetRef, commandBuffer, damage);
                         EntityStatMap targetStatMap = store.getComponent(targetRef,EntityStatMap.getComponentType());
                         if (targetStatMap != null) {
                             int staminaIndex = DefaultEntityStatTypes.getStamina();
-                            targetStatMap.subtractStatValue(staminaIndex, 2f);
+                            targetStatMap.subtractStatValue(staminaIndex, staminaDrain);
                             int staminaRDIndex = EntityStatType.getAssetMap().getIndex("StaminaRegenDelay");
-                            targetStatMap.subtractStatValue(staminaRDIndex, 2f);
+                            EntityStatValue stamRDValue = targetStatMap.get(staminaRDIndex);
+                            if (stamRDValue==null|| stamRDValue.get() > appliedStaminaRegenDelay)
+                            targetStatMap.setStatValue(staminaRDIndex, appliedStaminaRegenDelay);
                         }
 
                         float damageDone = damage.getAmount();
@@ -82,7 +91,7 @@ public class Drain extends Ability {
                             int healthIndex = DefaultEntityStatTypes.getHealth();
                             statMap.addStatValue(healthIndex, heal);
                             int staminaIndex = DefaultEntityStatTypes.getStamina();
-                            statMap.addStatValue(staminaIndex, heal*2);
+                            statMap.addStatValue(staminaIndex, staminaDrain*0.75f);
 
 
                         }
@@ -93,8 +102,8 @@ public class Drain extends Ability {
                     statMap.subtractStatValue(DefaultEntityStatTypes.getMana(), costPerTick);
                     int ManaRegenDelayIndex =EntityStatType.getAssetMap().getIndex("ManaRegenDelay");
                     EntityStatValue mtdValue = statMap.get(ManaRegenDelayIndex);
-                    if  (mtdValue == null || mtdValue.get()> costPerTick) {
-                        statMap.setStatValue(ManaRegenDelayIndex,costPerTick);
+                    if  (mtdValue == null || mtdValue.get() > manaRegenDelay) {
+                        statMap.setStatValue(ManaRegenDelayIndex,manaRegenDelay);
                     }
                     cooldown += attackCooldown;
                 }
