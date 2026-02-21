@@ -16,9 +16,6 @@ import me.basil.otherworld.components.OtherworldData;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class RaceSystem extends EntityTickingSystem<EntityStore> {
 
 
@@ -31,7 +28,7 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
         assert player != null;
         OtherworldData otherworldData = store.getComponent(ref,OtherworldData.getComponentType());
         assert otherworldData != null;
-        if (!otherworldData.isInitalized){
+        if (!otherworldData.isInitialized){
             otherworldData.initializeRace(playerRef,commandBuffer);
         }
         if (otherworldData.getRace() == null) {return;}
@@ -58,19 +55,15 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
         }
 
         otherworldData.passiveTick(deltaTime,ref,playerRef,store,commandBuffer); // race passive
-        for (int i = 0 ; i < 9; i++){ // skill ticks
-            Ability ability = otherworldData.getAbility(i);
-            if (ability != null){
-                if (ability == otherworldData.selectedAbility){
-                    ability.selectedTick(deltaTime,ref,playerRef,store,commandBuffer);
-                }
-                else{
-                    ability.passiveTick(deltaTime, ref, playerRef, store, commandBuffer);
-                }
 
+        for (Ability ability : otherworldData.getAbilityPool()){
+            if (ability == otherworldData.selectedAbility){
+                ability.selectedTick(deltaTime,ref,playerRef,store,commandBuffer);
+            }
+            else{
+                ability.passiveTick(deltaTime, ref, playerRef, store, commandBuffer);
             }
         }
-
 
         otherworldData.selectedSlot = newSelectedSlot;
 

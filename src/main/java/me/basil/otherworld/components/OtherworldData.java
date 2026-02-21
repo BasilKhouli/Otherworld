@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class OtherworldData implements Component<EntityStore> {
 
@@ -26,7 +27,8 @@ public class OtherworldData implements Component<EntityStore> {
     public Ability selectedAbility;
 
 
-    public boolean isInitalized = false;
+    public boolean isInitialized = false;
+    private boolean abilitiesInitialized = false;
     Race previousRaceBuffer; // Null when race is initialized properly
 
 
@@ -51,8 +53,10 @@ public class OtherworldData implements Component<EntityStore> {
             previousRaceBuffer = race;
         }
         race = RaceManager.getRace(raceName);
-        isInitalized = false;
+        isInitialized = false;
         clearAbilities();
+        abilitiesInitialized = false;
+
 
 
     }
@@ -67,17 +71,20 @@ public class OtherworldData implements Component<EntityStore> {
         if (race != null){
             race.initialize(playerRef,componentAccessor);
 
-            for (int i = 0;i < equippedAbilities.length;i++){
-                if (race.defaultEquippedAbilities[i] != null){
-                    addAbility(race.defaultEquippedAbilities[i].name,i);
+            if (!abilitiesInitialized){
+                setEquippedAbilities(Arrays.stream(race.defaultEquippedAbilities).map((a)-> a != null ? a.name : null).toArray(String[]::new));
+                for (int i = 0;i < equippedAbilities.length;i++){
+                    if (race.defaultEquippedAbilities[i] != null){
+                        addAbility(race.defaultEquippedAbilities[i].name,i);
+                    }
                 }
-
-
             }
+
         }
 
+
         previousRaceBuffer = null;
-        isInitalized = true;
+        isInitialized = true;
 
 
 
@@ -130,7 +137,12 @@ public class OtherworldData implements Component<EntityStore> {
         for  (int i = 0; i < equippedAbilities.length; i++){
             addAbility(_equippedAbilities[i], i);
         }
+        if (Arrays.stream(_equippedAbilities).anyMatch(Objects::nonNull)){
+            abilitiesInitialized = true;
+        }
+
     }
+
 
     public String[] getEquippedAbilityNames(){
         String[] names = new String[equippedAbilities.length];
