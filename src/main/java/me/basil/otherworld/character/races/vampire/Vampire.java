@@ -139,7 +139,7 @@ public class Vampire extends Race {
                 fauxTorch = null;
             }
 
-            int torchID = BlockType.getAssetMap().getIndex("Furniture_Crude_Torch");
+            int torchID = BlockType.getAssetMap().getIndex("Util_Light_Block");
             ServerSetBlock blockPacket = new ServerSetBlock();
             blockPacket.x = blockPosition.getX();
             blockPacket.y = blockPosition.getY();

@@ -42,10 +42,6 @@ public class DarkSightToggle extends Ability {
         if (ph instanceof GamePacketHandler gph){
 
             Deque<SyncInteractionChain> packets = gph.getInteractionPacketQueue();
-
-
-
-
             for (SyncInteractionChain packet : packets) {//Mostly for debug all will be replaced with proper ways to set later
                 if (packet.interactionType == InteractionType.Use && packet.initial){
                     vampireRace.hasDarkVision = !vampireRace.hasDarkVision;

@@ -1,0 +1,13 @@
+{
+  "BlockType": {
+    "Material": "Empty",
+    "DrawType": "Empty",
+    "Opacity": "Transparent",
+    "Light": {
+      "Radius": 15
+    },
+    "HitboxType": "Empty_Bounding_Box"
+  },
+  "PlayerAnimationsId": "Block",
+  "Icon": "Icons/ItemsGenerated/Editor_Empty.png"
+}
