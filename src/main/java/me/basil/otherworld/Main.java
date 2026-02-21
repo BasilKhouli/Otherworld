@@ -12,6 +12,8 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.character.races.RaceManager;
 import me.basil.otherworld.commands.OtherworldCommand;
 import me.basil.otherworld.components.OtherworldData;
+import me.basil.otherworld.components.PlayerExclusiveEntity;
+import me.basil.otherworld.systems.HiddenEntitiesSystem;
 import me.basil.otherworld.systems.RaceSystem;
 
 import java.util.HashMap;
@@ -23,6 +25,7 @@ public class Main extends JavaPlugin {
 
     //Componenty Types
     public static ComponentType<EntityStore,OtherworldData> OWDcomponentType;
+    public static ComponentType<EntityStore, PlayerExclusiveEntity> PEEComponentType;
 
     public Main(JavaPluginInit init) {
         super(init);
@@ -37,9 +40,11 @@ public class Main extends JavaPlugin {
 
         ComponentRegistryProxy<EntityStore> eSR =this.getEntityStoreRegistry();
         OWDcomponentType = eSR.registerComponent(OtherworldData.class,"OtherworldData",OtherworldData.CODEC);
+        PEEComponentType = eSR.registerComponent(PlayerExclusiveEntity.class,"PlayerExclusiveEntity",PlayerExclusiveEntity.CODEC);
 
 
         eSR.registerSystem(new RaceSystem());
+        eSR.registerSystem(new HiddenEntitiesSystem());
 
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, (event) -> {
 

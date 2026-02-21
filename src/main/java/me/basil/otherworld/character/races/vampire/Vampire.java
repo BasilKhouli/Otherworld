@@ -1,50 +1,48 @@
 package me.basil.otherworld.character.races.vampire;
 
-import com.hypixel.hytale.assetstore.map.BlockTypeAssetMap;
-import com.hypixel.hytale.component.CommandBuffer;
-import com.hypixel.hytale.component.ComponentAccessor;
-import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.*;
+import com.hypixel.hytale.protocol.packets.entities.EntityUpdates;
 import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
 import com.hypixel.hytale.protocol.packets.world.ServerSetBlock;
-import com.hypixel.hytale.protocol.packets.world.ServerSetBlocks;
-import com.hypixel.hytale.protocol.packets.world.SetChunk;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
+import com.hypixel.hytale.server.core.asset.type.model.config.Model;
+import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
+import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
-import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
-import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.entity.DespawnComponent;
+import com.hypixel.hytale.server.core.modules.entity.EntityModule;
+import com.hypixel.hytale.server.core.modules.entity.component.*;
+import com.hypixel.hytale.server.core.modules.entity.tracker.EntityTrackerSystems;
+import com.hypixel.hytale.server.core.modules.entity.tracker.NetworkId;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.EntityStatType;
-import com.hypixel.hytale.server.core.modules.entitystats.modifier.Modifier;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
+import com.hypixel.hytale.server.npc.NPCPlugin;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
-import me.basil.otherworld.character.races.vampire.abilities.DarkSightToggle;
+import me.basil.otherworld.character.races.vampire.abilities.EcholocationToggle;
 import me.basil.otherworld.character.races.vampire.abilities.Drain;
+import me.basil.otherworld.components.PlayerExclusiveEntity;
 import me.basil.otherworld.utils.SimpleSunlightDetector;
 import org.jspecify.annotations.NonNull;
 
-import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.function.IntPredicate;
 
 public class Vampire extends Race {
@@ -52,7 +50,7 @@ public class Vampire extends Race {
 
         List<Ability> raceAbilities = List.of(
                 new Drain(),
-                new DarkSightToggle()
+                new EcholocationToggle()
 
 
         );
@@ -84,23 +82,25 @@ public class Vampire extends Race {
 
         burnInSunlight(deltaTime,ref,playerRef,store,commandBuffer);
         world.execute(()->
-                darkSightPassive(ref,playerRef,store,commandBuffer));
+                echolocationPassiveEntityTest(ref,playerRef,store,commandBuffer));
 
     }
-    Vector3i fauxTorch;
-    private void darkSightPassive(Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
+
+    Vector3i eLLightBlockPosition;
+    public boolean hasEcholocation = false;
+    private void echolocationPassive(Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
         World world = commandBuffer.getExternalData().getWorld();
-        if (!hasDarkVision){
-            if (fauxTorch != null){
+        if (!hasEcholocation){
+            if (eLLightBlockPosition != null){
                 ServerSetBlock blockPacket = new ServerSetBlock();
 
-                blockPacket.x = fauxTorch.getX();
-                blockPacket.y = fauxTorch.getY();
-                blockPacket.z = fauxTorch.getZ();
+                blockPacket.x = eLLightBlockPosition.getX();
+                blockPacket.y = eLLightBlockPosition.getY();
+                blockPacket.z = eLLightBlockPosition.getZ();
                 blockPacket.blockId = 0;
 
                 playerRef.getPacketHandler().writeNoCache(blockPacket);
-                fauxTorch = null;
+                eLLightBlockPosition = null;
             }
 
             return;
@@ -114,9 +114,9 @@ public class Vampire extends Race {
         if (modelComponent != null) {
             headHeight += modelComponent.getModel().getEyeHeight(ref,store);
         }
-        Vector3d headPostion = new  Vector3d(position.getX(), position.getY()+headHeight, position.getZ());
+        Vector3d headPosition = new  Vector3d(position.getX(), position.getY()+headHeight, position.getZ());
 
-        Vector3i blockPosition = headPostion.toVector3i();
+        Vector3i blockPosition = headPosition.toVector3i();
 
 
         var blockAtHead = world.getBlock(blockPosition);
@@ -125,18 +125,18 @@ public class Vampire extends Race {
             return;
         }
 
-        if (fauxTorch != blockPosition) {
+        if (eLLightBlockPosition != blockPosition) {
 
-            if (fauxTorch != null) {
+            if (eLLightBlockPosition != null) {
                 ServerSetBlock blockPacket = new ServerSetBlock();
 
-                blockPacket.x = fauxTorch.getX();
-                blockPacket.y = fauxTorch.getY();
-                blockPacket.z = fauxTorch.getZ();
+                blockPacket.x = eLLightBlockPosition.getX();
+                blockPacket.y = eLLightBlockPosition.getY();
+                blockPacket.z = eLLightBlockPosition.getZ();
                 blockPacket.blockId = 0;
 
                 playerRef.getPacketHandler().writeNoCache(blockPacket);
-                fauxTorch = null;
+                eLLightBlockPosition = null;
             }
 
             int torchID = BlockType.getAssetMap().getIndex("Util_Light_Block");
@@ -147,12 +147,49 @@ public class Vampire extends Race {
             blockPacket.blockId = torchID;
 
             playerRef.getPacketHandler().writeNoCache(blockPacket);
-            fauxTorch = blockPosition;
+            eLLightBlockPosition = blockPosition;
         }
 
 
 
 
+    }
+
+    Ref<EntityStore> elRef = null;
+    private void echolocationPassiveEntityTest(Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
+        if (!hasEcholocation){
+            if (elRef != null){
+                commandBuffer.removeEntity(elRef,RemoveReason.REMOVE);
+                elRef = null;
+            }
+            return;
+        }
+
+        TransformComponent transformComponent = store.getComponent(ref,TransformComponent.getComponentType());
+        assert transformComponent != null;
+        Vector3d position = transformComponent.getPosition().clone();
+        float headHeight = 0;
+        ModelComponent modelComponent = store.getComponent(ref, ModelComponent.getComponentType());
+        if (modelComponent != null) {
+            headHeight += modelComponent.getModel().getEyeHeight(ref,store);
+        }
+        Vector3d headPosition = new  Vector3d(position.getX(), position.getY()+headHeight, position.getZ());
+
+        if (elRef == null){
+            Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
+            holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(headPosition, Vector3f.ZERO));
+            holder.addComponent(DynamicLight.getComponentType(), new DynamicLight(new ColorLight((byte) 20,(byte)0 ,(byte)0,(byte)0)));
+            holder.ensureComponent(UUIDComponent.getComponentType());
+            holder.addComponent(NetworkId.getComponentType(), new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
+            holder.addComponent(PlayerExclusiveEntity.getComponentType(), new PlayerExclusiveEntity(Collections.singletonList(playerRef.getUuid())));
+            elRef = store.addEntity(holder, AddReason.SPAWN);
+
+        }else {
+            if (elRef.isValid()){
+                store.ensureAndGetComponent(elRef,TransformComponent.getComponentType()).setPosition(headPosition);
+            }
+
+        }
     }
 
     private static final String PASSIVE_EFFECT_ID = "Vampire_Passive_Effect";
@@ -344,120 +381,8 @@ public class Vampire extends Race {
         //reloadChunks(playerRef);
     }
 
-    //region Brightness Packet stuff
-
-    public boolean hasDarkVision = false;
-    private void DarkVisionPacketSetUp(PlayerRef playerRef){
-        final ChannelOutboundHandlerAdapter fullBrightHandler = new ChannelOutboundHandlerAdapter() {
-            @Override
-            public void write(ChannelHandlerContext ctx, Object msg, io.netty.channel.ChannelPromise promise) throws Exception {
-                if (!hasDarkVision){
-                    super.write(ctx, msg, promise);
-                    return;
-                }
-                if (msg instanceof Packet packet){
-                    msg = packetChecker(packet,playerRef);
-                }
-                else if (msg instanceof Packet[] packets){
-                    for (int i = 0; i < packets.length; i++){
-                        packets[i] = packetChecker(packets[i],playerRef);
-                    }
-                    msg = packets;
-
-                }
-                super.write(ctx, msg, promise);
-            }
-        };
-
-        playerRef.getPacketHandler().getChannel().pipeline().addLast("Vampire_FullBright",fullBrightHandler);
 
 
-    }
-
-    private Packet packetChecker(Packet originalPacket, PlayerRef playerRef){
-        if (originalPacket instanceof SetChunk setChunk){
-            return modifyChunkPacket(setChunk,playerRef);
-        }
-        else if (originalPacket instanceof CachedPacket<?> cachedPacket && cachedPacket.getId() == 131){
-            SetChunk unpackedSetChunk = unpackSetChunk(cachedPacket);
-            if (unpackedSetChunk != null){
-                return modifyChunkPacket(unpackedSetChunk,playerRef);
-            }
-        }
-        return originalPacket;
-    }
-
-    public int brightnessLevel = 10;
-    private SetChunk modifyChunkPacket(SetChunk originalPacket, PlayerRef playerRef){
-        SetChunk modifiedPacket = new SetChunk(originalPacket);
-        final byte[] lightData = generateFlatLightData();
-
-
-        modifiedPacket.localLight = lightData;
-        modifiedPacket.globalLight = lightData;
-
-        //playerRef.sendMessage(Message.raw(String.valueOf(originalPacket.localLight.length)));
-
-
-        return modifiedPacket;
-    }
-
-    private byte[] generateFlatLightData() {
-        ByteBuf buf = Unpooled.buffer(18);
-        buf.writeBoolean(true);
-        buf.writeByte(0);
-        short packed = (short)((brightnessLevel & 15) * 4369);
-
-        for(int i = 0; i < 8; ++i) {
-            buf.writeShortLE(packed);
-        }
-
-        byte[] data = new byte[buf.readableBytes()];
-        buf.readBytes(data);
-        buf.release();
-
-        return data;
-    }
-
-    private SetChunk unpackSetChunk(CachedPacket<?> cached) { // I HAVE NO IDEA HOW THIS WORKS STOLEN FROM FULL BRIGHT MOD :D
-
-        Field cachedBytesField = null;
-        try {
-            cachedBytesField = CachedPacket.class.getDeclaredField("cachedBytes");
-            cachedBytesField.setAccessible(true);
-        } catch (NoSuchFieldException var2) {
-            //((HytaleLogger.Api)LOGGER.atWarning()).log("Could not access CachedPacket.cachedBytes - some features may not work");
-        }
-
-        if (cachedBytesField == null) {
-            return null;
-        } else {
-            try {
-                ByteBuf buf = (ByteBuf)cachedBytesField.get(cached);
-                if (buf != null) {
-                    return SetChunk.deserialize(buf.duplicate(), 0);
-                }
-            } catch (Exception var3) {
-                //((HytaleLogger.Api)LOGGER.atFine()).log("Failed to unpack CachedPacket");
-            }
-
-            return null;
-        }
-    }
-
-    public void reloadChunks(PlayerRef playerRef) {
-        try {
-            Ref<?> ref = playerRef.getReference();
-            if (ref != null) {
-                World world = ((EntityStore)ref.getStore().getExternalData()).getWorld();
-                world.execute(() -> playerRef.getChunkTracker().unloadAll(playerRef));
-            }
-        } catch (Exception e) {
-            //((HytaleLogger.Api)LOGGER.atWarning()).log("Failed to reload chunks: " + e.getMessage());
-        }
-
-    }
-    //endregion
 
 
 }

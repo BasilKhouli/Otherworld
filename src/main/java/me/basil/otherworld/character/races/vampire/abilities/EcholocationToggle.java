@@ -3,13 +3,11 @@ package me.basil.otherworld.character.races.vampire.abilities;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.protocol.packets.interaction.SyncInteractionChain;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.io.PacketHandler;
 import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
-import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
@@ -19,9 +17,9 @@ import me.basil.otherworld.components.OtherworldData;
 
 import java.util.Deque;
 
-public class DarkSightToggle extends Ability {
-	public DarkSightToggle() {
-        super("Dark_Sight_Toggle","Configure Dark Sight","press the USE key to toggle Dark Sight");
+public class EcholocationToggle extends Ability {
+	public EcholocationToggle() {
+        super("Echolocation_Toggle","Toggle Echolocation","press the USE key to toggle echolocation");
     }
 
     @Override
@@ -44,10 +42,10 @@ public class DarkSightToggle extends Ability {
             Deque<SyncInteractionChain> packets = gph.getInteractionPacketQueue();
             for (SyncInteractionChain packet : packets) {//Mostly for debug all will be replaced with proper ways to set later
                 if (packet.interactionType == InteractionType.Use && packet.initial){
-                    vampireRace.hasDarkVision = !vampireRace.hasDarkVision;
+                    vampireRace.hasEcholocation = !vampireRace.hasEcholocation;
 
                     EventTitleUtil.hideEventTitleFromPlayer(playerRef, 0);
-                    String outString = vampireRace.hasDarkVision ? "Enabled" : "Disabled";
+                    String outString = vampireRace.hasEcholocation ? "Enabled" : "Disabled";
                     playerRef.sendMessage(Message.raw(outString));
                     //EventTitleUtil.showEventTitleToPlayer(playerRef, Message.raw(outString),Message.raw("Dark Vision:"),false,null,2,0,1);
 
@@ -72,6 +70,6 @@ public class DarkSightToggle extends Ability {
 
     @Override
     public Ability clone() {
-        return new DarkSightToggle();
+        return new EcholocationToggle();
     }
 }
