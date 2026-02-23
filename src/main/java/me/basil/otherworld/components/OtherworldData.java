@@ -21,7 +21,7 @@ public class OtherworldData implements Component<EntityStore> {
 
     private Race race;
     private final Ability[] equippedAbilities = new Ability[9];
-    private final List<Ability> abilityPool = new ArrayList<Ability>();
+    private final List<Ability> abilityPool = new ArrayList<>();
 
     public int selectedSlot;
     public Ability selectedAbility;
@@ -96,13 +96,18 @@ public class OtherworldData implements Component<EntityStore> {
         }
 
         Ability ability = race.getAbility(abilityName);
+        if  (ability != null){
+            ability = ability.clone();
+        }
+
+
 
         Ability oldAbility = equippedAbilities[slot];
 
         if (oldAbility != null){
             //call unequipped
 
-            if (Arrays.stream(equippedAbilities).noneMatch((Ability eAbility)->{ return eAbility!=null && eAbility.name.equals(oldAbility.name); })) {//clear pool
+            if (Arrays.stream(equippedAbilities).noneMatch((Ability eAbility)-> eAbility!=null && eAbility.name.equals(oldAbility.name))) {//clear pool
                 abilityPool.remove(oldAbility);
             }
         }
@@ -110,14 +115,14 @@ public class OtherworldData implements Component<EntityStore> {
 
         if (ability != null){
             if (abilityPool.stream().anyMatch((Ability poolAbility)-> poolAbility.name.equals(abilityName))){
-                ability = abilityPool.stream().filter((Ability poolAbility)->{ return poolAbility.name.equals(abilityName);}).findFirst().orElse(ability);
+                ability = abilityPool.stream().filter((Ability poolAbility)-> poolAbility.name.equals(abilityName)).findFirst().orElse(ability);
             }
             else abilityPool.add(ability);
 
             //call equipped here
         }
 
-        equippedAbilities[slot] = ability != null ? ability.clone() : ability ;
+        equippedAbilities[slot] = ability;
 
     }
 

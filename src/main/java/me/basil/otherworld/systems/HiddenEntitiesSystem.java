@@ -29,6 +29,7 @@ public class HiddenEntitiesSystem extends EntityTickingSystem<EntityStore> {
 
         while (iterator.hasNext()) {
             Ref<EntityStore> eRef = iterator.next();
+            if (!eRef.isValid()) continue;
             PlayerExclusiveEntity peeComponent =commandBuffer.getComponent(eRef,PlayerExclusiveEntity.getComponentType());
             if (peeComponent != null && !peeComponent.allowedPlayerUuids.contains(playerRef.getUuid())) {
                 entityViewer.hiddenCount++;

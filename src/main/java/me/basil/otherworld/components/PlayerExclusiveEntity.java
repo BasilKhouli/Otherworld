@@ -16,7 +16,7 @@ public class PlayerExclusiveEntity implements Component<EntityStore> {
     public final List<UUID> allowedPlayerUuids = new ArrayList<>();
 
     public static final BuilderCodec<PlayerExclusiveEntity> CODEC = BuilderCodec.builder(PlayerExclusiveEntity.class,PlayerExclusiveEntity::new)
-            .append(new KeyedCodec<>("players", new ArrayCodec<>(Codec.UUID_BINARY, UUID[]::new)  ),
+            .append(new KeyedCodec<>("Players", new ArrayCodec<>(Codec.UUID_BINARY, UUID[]::new)  ),
                     (pee,value) -> pee.allowedPlayerUuids.addAll(Arrays.stream(value).toList()),
                     (pee) -> pee.allowedPlayerUuids.toArray(UUID[]::new)
             )

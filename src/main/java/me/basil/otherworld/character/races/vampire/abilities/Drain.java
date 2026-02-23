@@ -18,7 +18,7 @@ import me.basil.otherworld.character.races.Ability;
 
 public class Drain extends Ability {
     public Drain() {
-        super("Drain","Drain health and stamina from a target","Crouch while looking at a target to drain them");
+        super("Drain","Drain health and stamina from a target","Crouch while looking at a target to drain them of health and stamina while regaining your own at the cost of mana.");
     }
 
     MovementStatesComponent movementStatesComponent;
@@ -32,7 +32,7 @@ public class Drain extends Ability {
     boolean wasCrouched = false;
     @Override
     public void selectedTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer) {
-        final float attackCooldown = 0.4f;
+        final float attackCooldown = 0.1f;
 
         boolean currentCrouched = movementStatesComponent.getMovementStates().crouching;
 
@@ -42,7 +42,7 @@ public class Drain extends Ability {
             cooldown = 0;
         }
 
-        final float costPerTick = 1f;
+        final float costPerTick = 0.5f;
         final float manaRegenDelay = -0.3f;
         final float appliedStaminaRegenDelay = -0.5f;
         final float tickDamage = 0.5f;

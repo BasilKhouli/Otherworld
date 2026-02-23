@@ -56,7 +56,8 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
 
         otherworldData.passiveTick(deltaTime,ref,playerRef,store,commandBuffer); // race passive
 
-        for (Ability ability : otherworldData.getAbilityPool()){
+        var abilityPool = otherworldData.getAbilityPool();
+        for (Ability ability : abilityPool){
             if (ability == otherworldData.selectedAbility){
                 ability.selectedTick(deltaTime,ref,playerRef,store,commandBuffer);
             }

@@ -3,24 +3,16 @@ package me.basil.otherworld.character.races.vampire;
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
-import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.*;
-import com.hypixel.hytale.protocol.packets.entities.EntityUpdates;
 import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
-import com.hypixel.hytale.protocol.packets.world.ServerSetBlock;
-import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
-import com.hypixel.hytale.server.core.asset.type.model.config.Model;
-import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
+import com.hypixel.hytale.server.core.asset.type.entityeffect.config.EntityEffect;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
-import com.hypixel.hytale.server.core.modules.entity.DespawnComponent;
-import com.hypixel.hytale.server.core.modules.entity.EntityModule;
 import com.hypixel.hytale.server.core.modules.entity.component.*;
-import com.hypixel.hytale.server.core.modules.entity.tracker.EntityTrackerSystems;
 import com.hypixel.hytale.server.core.modules.entity.tracker.NetworkId;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
@@ -31,12 +23,11 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
-import com.hypixel.hytale.server.npc.NPCPlugin;
-import io.netty.buffer.ByteBuf;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
-import me.basil.otherworld.character.races.vampire.abilities.EcholocationToggle;
+import me.basil.otherworld.character.races.vampire.abilities.DarkSightToggle;
 import me.basil.otherworld.character.races.vampire.abilities.Drain;
+import me.basil.otherworld.components.CleanUpComponent;
 import me.basil.otherworld.components.PlayerExclusiveEntity;
 import me.basil.otherworld.utils.SimpleSunlightDetector;
 import org.jspecify.annotations.NonNull;
@@ -50,7 +41,7 @@ public class Vampire extends Race {
 
         List<Ability> raceAbilities = List.of(
                 new Drain(),
-                new EcholocationToggle()
+                new DarkSightToggle()
 
 
         );
@@ -81,86 +72,18 @@ public class Vampire extends Race {
         flightLogic(deltaTime,ref,playerRef,store,commandBuffer);
 
         burnInSunlight(deltaTime,ref,playerRef,store,commandBuffer);
-        world.execute(()->
-                echolocationPassiveEntityTest(ref,playerRef,store,commandBuffer));
-
-    }
-
-    Vector3i eLLightBlockPosition;
-    public boolean hasEcholocation = false;
-    private void echolocationPassive(Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
-        World world = commandBuffer.getExternalData().getWorld();
-        if (!hasEcholocation){
-            if (eLLightBlockPosition != null){
-                ServerSetBlock blockPacket = new ServerSetBlock();
-
-                blockPacket.x = eLLightBlockPosition.getX();
-                blockPacket.y = eLLightBlockPosition.getY();
-                blockPacket.z = eLLightBlockPosition.getZ();
-                blockPacket.blockId = 0;
-
-                playerRef.getPacketHandler().writeNoCache(blockPacket);
-                eLLightBlockPosition = null;
-            }
-
-            return;
-        }
-
-        TransformComponent transformComponent = store.getComponent(ref,TransformComponent.getComponentType());
-        assert transformComponent != null;
-        Vector3d position = transformComponent.getPosition().clone();
-        float headHeight = 0;
-        ModelComponent modelComponent = store.getComponent(ref, ModelComponent.getComponentType());
-        if (modelComponent != null) {
-            headHeight += modelComponent.getModel().getEyeHeight(ref,store);
-        }
-        Vector3d headPosition = new  Vector3d(position.getX(), position.getY()+headHeight, position.getZ());
-
-        Vector3i blockPosition = headPosition.toVector3i();
-
-
-        var blockAtHead = world.getBlock(blockPosition);
-
-        if (blockAtHead != 0) {
-            return;
-        }
-
-        if (eLLightBlockPosition != blockPosition) {
-
-            if (eLLightBlockPosition != null) {
-                ServerSetBlock blockPacket = new ServerSetBlock();
-
-                blockPacket.x = eLLightBlockPosition.getX();
-                blockPacket.y = eLLightBlockPosition.getY();
-                blockPacket.z = eLLightBlockPosition.getZ();
-                blockPacket.blockId = 0;
-
-                playerRef.getPacketHandler().writeNoCache(blockPacket);
-                eLLightBlockPosition = null;
-            }
-
-            int torchID = BlockType.getAssetMap().getIndex("Util_Light_Block");
-            ServerSetBlock blockPacket = new ServerSetBlock();
-            blockPacket.x = blockPosition.getX();
-            blockPacket.y = blockPosition.getY();
-            blockPacket.z = blockPosition.getZ();
-            blockPacket.blockId = torchID;
-
-            playerRef.getPacketHandler().writeNoCache(blockPacket);
-            eLLightBlockPosition = blockPosition;
-        }
-
-
+        darkSightPassiveEntityTest(ref,playerRef,store,commandBuffer);
 
 
     }
 
-    Ref<EntityStore> elRef = null;
-    private void echolocationPassiveEntityTest(Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
-        if (!hasEcholocation){
-            if (elRef != null){
-                commandBuffer.removeEntity(elRef,RemoveReason.REMOVE);
-                elRef = null;
+    public boolean hasDarkSight = false;
+    Ref<EntityStore> darkSightRef = null;
+    private void darkSightPassiveEntityTest(Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
+        if (!hasDarkSight){
+            if (darkSightRef != null){
+                commandBuffer.removeEntity(darkSightRef,RemoveReason.REMOVE);
+                darkSightRef = null;
             }
             return;
         }
@@ -175,18 +98,27 @@ public class Vampire extends Race {
         }
         Vector3d headPosition = new  Vector3d(position.getX(), position.getY()+headHeight, position.getZ());
 
-        if (elRef == null){
+        if (darkSightRef == null){
             Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
             holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(headPosition, Vector3f.ZERO));
-            holder.addComponent(DynamicLight.getComponentType(), new DynamicLight(new ColorLight((byte) 20,(byte)0 ,(byte)0,(byte)0)));
+            holder.addComponent(PersistentDynamicLight.getComponentType(), new PersistentDynamicLight(new ColorLight()));
             holder.ensureComponent(UUIDComponent.getComponentType());
             holder.addComponent(NetworkId.getComponentType(), new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
             holder.addComponent(PlayerExclusiveEntity.getComponentType(), new PlayerExclusiveEntity(Collections.singletonList(playerRef.getUuid())));
-            elRef = store.addEntity(holder, AddReason.SPAWN);
+            holder.addComponent(CleanUpComponent.getComponentType(), new CleanUpComponent());
+            darkSightRef = commandBuffer.addEntity(holder, AddReason.SPAWN);
 
         }else {
-            if (elRef.isValid()){
-                store.ensureAndGetComponent(elRef,TransformComponent.getComponentType()).setPosition(headPosition);
+            if (darkSightRef.isValid()){
+                commandBuffer.ensureAndGetComponent(darkSightRef,TransformComponent.getComponentType()).setPosition(headPosition);
+                commandBuffer.ensureAndGetComponent(darkSightRef,CleanUpComponent.getComponentType()).secondsTillDespawn=0.5f;
+                var dl = commandBuffer.ensureAndGetComponent(darkSightRef,PersistentDynamicLight.getComponentType());
+                var cl = dl.getColorLight();
+                if (cl.radius < 100){
+                    cl.radius += 1;
+                }
+
+                dl.setColorLight(cl);
             }
 
         }
@@ -197,7 +129,8 @@ public class Vampire extends Race {
     private void applyPassive(Ref<EntityStore> ref,Store<EntityStore> store){
         EffectControllerComponent effectController = store.getComponent(ref, EffectControllerComponent.getComponentType());
         assert effectController != null;
-        addEffect(PASSIVE_EFFECT_ID,ref,store,effectController);
+
+        addEffect("Vampire_Passive",PASSIVE_EFFECT_ID,ref,store,effectController);
     }
     private static final String SUNLIGHT_BURN_EFFECT_ID = "Vampire_Sunlight_Burn_Effect";
     private static final String SMOKING_EFFECT_ID = "Vampire_Smoking_Effect";
@@ -230,7 +163,7 @@ public class Vampire extends Race {
             if  (manaValue.get()>=cost) {
                 if (!isSmoking){
                     if (!startedBurning) {
-                        addEffect(SMOKING_EFFECT_ID,ref,commandBuffer,effectController);
+                        addEffect("Smoke",SMOKING_EFFECT_ID,ref,commandBuffer,effectController);
                         isSmoking = true;
                     }
 
@@ -245,16 +178,16 @@ public class Vampire extends Race {
                 }
 
                 if (startedBurning) {
-                    removeEffect(SUNLIGHT_BURN_EFFECT_ID,ref,commandBuffer,effectController);
+                    removeEffect("Burn",ref,commandBuffer,effectController);
                     startedBurning = false;
                 }
             }
             else{ // out of stamina start burn
                 if (!startedBurning){
-                    addEffect(SUNLIGHT_BURN_EFFECT_ID,ref,commandBuffer,effectController);
+                    addEffect("Burn",SUNLIGHT_BURN_EFFECT_ID,ref,commandBuffer,effectController);
                     startedBurning = true;
                     if (isSmoking) {
-                        removeEffect(SMOKING_EFFECT_ID,ref,commandBuffer,effectController);
+                        removeEffect("Smoke",ref,commandBuffer,effectController);
                         isSmoking = false;
                     }
 
@@ -265,11 +198,11 @@ public class Vampire extends Race {
         }
         else  {
             if (isSmoking) {
-                removeEffect(SMOKING_EFFECT_ID,ref,commandBuffer,effectController);
+                removeEffect("Smoke",ref,commandBuffer,effectController);
                 isSmoking = false;
             }
             if (startedBurning) {
-                removeEffect(SUNLIGHT_BURN_EFFECT_ID,ref,commandBuffer,effectController);
+                removeEffect("Burn",ref,commandBuffer,effectController);
                 startedBurning = false;
             }
         }
@@ -312,7 +245,7 @@ public class Vampire extends Race {
 
             if (!isInFlight){
                 isInFlight = true;
-                addEffect(BAT_TRANSFORMATION_EFFECT_ID,ref,commandBuffer,effectController);
+                addEffect("Bat",BAT_TRANSFORMATION_EFFECT_ID,ref,commandBuffer,effectController);
             }
             //Drains Stamina
 
@@ -340,7 +273,7 @@ public class Vampire extends Race {
         else {
             if (isInFlight){
                 isInFlight = false;
-                removeEffect(BAT_TRANSFORMATION_EFFECT_ID,ref,commandBuffer,effectController);
+                removeEffect("Bat",ref,commandBuffer,effectController);
             }
         }
 
@@ -352,9 +285,6 @@ public class Vampire extends Race {
     @Override
     public void initialize(PlayerRef playerRef, ComponentAccessor<EntityStore> componentAccessor) {
         super.initialize(playerRef, componentAccessor);
-        //reloadChunks(playerRef);
-        //DarkVisionPacketSetUp(playerRef);
-
     }
 
     @Override
@@ -376,9 +306,6 @@ public class Vampire extends Race {
             playerRef.getPacketHandler().writeNoCache(new SetMovementStates(new SavedMovementStates(false)));
         }
 
-        //clear full bright
-        playerRef.getPacketHandler().getChannel().pipeline().remove("Vampire_FullBright");
-        //reloadChunks(playerRef);
     }
 
 
