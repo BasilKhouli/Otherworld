@@ -31,12 +31,13 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
         if (!otherworldData.isInitialized){
             otherworldData.initializeRace(playerRef,commandBuffer);
         }
-        if (otherworldData.getRace() == null) {return;}
 
+        //Universal logic here
 
-
-
-
+        if (otherworldData.getRace() == null) {
+            //Human logic here
+            return;
+        }
 
         int newSelectedSlot = player.getInventory().getActiveHotbarSlot();
 

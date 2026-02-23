@@ -5,9 +5,11 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.protocol.*;
 import com.hypixel.hytale.protocol.packets.player.SetMovementStates;
+import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.entityeffect.config.EntityEffect;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
+import com.hypixel.hytale.server.core.entity.entities.BlockEntity;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
@@ -101,18 +103,19 @@ public class Vampire extends Race {
         if (darkSightRef == null){
             Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
             holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(headPosition, Vector3f.ZERO));
-            holder.addComponent(PersistentDynamicLight.getComponentType(), new PersistentDynamicLight(new ColorLight()));
+            holder.addComponent(DynamicLight.getComponentType(), new DynamicLight(new ColorLight()));
             holder.ensureComponent(UUIDComponent.getComponentType());
             holder.addComponent(NetworkId.getComponentType(), new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
             holder.addComponent(PlayerExclusiveEntity.getComponentType(), new PlayerExclusiveEntity(Collections.singletonList(playerRef.getUuid())));
             holder.addComponent(CleanUpComponent.getComponentType(), new CleanUpComponent());
+            holder.addComponent(BlockEntity.getComponentType(),new BlockEntity("Furniture_Crude_Torch"));
             darkSightRef = commandBuffer.addEntity(holder, AddReason.SPAWN);
 
         }else {
             if (darkSightRef.isValid()){
                 commandBuffer.ensureAndGetComponent(darkSightRef,TransformComponent.getComponentType()).setPosition(headPosition);
                 commandBuffer.ensureAndGetComponent(darkSightRef,CleanUpComponent.getComponentType()).secondsTillDespawn=0.5f;
-                var dl = commandBuffer.ensureAndGetComponent(darkSightRef,PersistentDynamicLight.getComponentType());
+                var dl = commandBuffer.ensureAndGetComponent(darkSightRef,DynamicLight.getComponentType());
                 var cl = dl.getColorLight();
                 if (cl.radius < 100){
                     cl.radius += 1;
