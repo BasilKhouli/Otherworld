@@ -1,4 +1,5 @@
 package me.basil.otherworld.character.races;
+import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
@@ -20,9 +21,7 @@ public abstract class Race {
     private final Map<String,Integer> appliedEffectIDs = new HashMap<>();
     protected final Map<String,Runnable> removalCallbacks = new HashMap<>();
 
-
     public Ability[] defaultEquippedAbilities;
-
 
     public Race(String raceName, String raceDescription, List<Ability> raceAbilities, Ability[] raceDefaultEquippedAbilities) {
         name = raceName;
