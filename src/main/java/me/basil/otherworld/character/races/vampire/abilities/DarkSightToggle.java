@@ -44,8 +44,8 @@ public class DarkSightToggle extends Ability {
                 vampireRace.hasDarkSight = !vampireRace.hasDarkSight;
 
                 EventTitleUtil.hideEventTitleFromPlayer(playerRef, 0);
-                String outString = vampireRace.hasDarkSight ? "Enabled" : "Disabled";
-                playerRef.sendMessage(Message.raw(outString));
+                String outString = vampireRace.hasDarkSight ? "enabled" : "disabled";
+                playerRef.sendMessage(Message.raw("Dark Sight: "+outString));
                 //EventTitleUtil.showEventTitleToPlayer(playerRef, Message.raw(outString),Message.raw("Dark Vision:"),false,null,2,0,1);
 
             }

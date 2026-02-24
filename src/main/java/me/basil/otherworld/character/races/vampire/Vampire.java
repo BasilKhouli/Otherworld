@@ -82,14 +82,6 @@ public class Vampire extends Race {
     public boolean hasDarkSight = false;
     Ref<EntityStore> darkSightRef = null;
     private void darkSightPassiveEntityTest(Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer){
-        if (!hasDarkSight){
-            if (darkSightRef != null){
-                commandBuffer.removeEntity(darkSightRef,RemoveReason.REMOVE);
-                darkSightRef = null;
-            }
-            return;
-        }
-
         TransformComponent transformComponent = store.getComponent(ref,TransformComponent.getComponentType());
         assert transformComponent != null;
         Vector3d position = transformComponent.getPosition().clone();
@@ -100,6 +92,28 @@ public class Vampire extends Race {
         }
         Vector3d headPosition = new  Vector3d(position.getX(), position.getY()+headHeight, position.getZ());
 
+        if (!hasDarkSight){
+            if (darkSightRef != null){
+                commandBuffer.ensureAndGetComponent(darkSightRef,TransformComponent.getComponentType()).setPosition(headPosition);
+                commandBuffer.ensureAndGetComponent(darkSightRef,CleanUpComponent.getComponentType()).secondsTillDespawn=0.5f;
+                var dl = commandBuffer.ensureAndGetComponent(darkSightRef,DynamicLight.getComponentType());
+                var cl = dl.getColorLight();
+                if (cl.radius > 0){
+                    cl.radius -= 5;
+                    cl.radius =(byte) Math.max(0,cl.radius);
+                    dl.setColorLight(cl);
+                }
+                else {
+                    commandBuffer.removeEntity(darkSightRef,RemoveReason.REMOVE);
+                    darkSightRef = null;
+                }
+            }
+            return;
+        }
+
+
+
+
         if (darkSightRef == null){
             Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
             holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(headPosition, Vector3f.ZERO));
@@ -108,7 +122,6 @@ public class Vampire extends Race {
             holder.addComponent(NetworkId.getComponentType(), new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
             holder.addComponent(PlayerExclusiveEntity.getComponentType(), new PlayerExclusiveEntity(Collections.singletonList(playerRef.getUuid())));
             holder.addComponent(CleanUpComponent.getComponentType(), new CleanUpComponent());
-            holder.addComponent(BlockEntity.getComponentType(),new BlockEntity("Furniture_Crude_Torch"));
             darkSightRef = commandBuffer.addEntity(holder, AddReason.SPAWN);
 
         }else {
@@ -118,10 +131,11 @@ public class Vampire extends Race {
                 var dl = commandBuffer.ensureAndGetComponent(darkSightRef,DynamicLight.getComponentType());
                 var cl = dl.getColorLight();
                 if (cl.radius < 100){
-                    cl.radius += 1;
+                    cl.radius += 3;
+                    cl.radius =(byte) Math.min(100,cl.radius);
+                    dl.setColorLight(cl);
                 }
 
-                dl.setColorLight(cl);
             }
 
         }

@@ -24,7 +24,7 @@ import java.util.Map;
 public class Main extends JavaPlugin {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
-    //Componenty Types
+    //Component Types
     public static ComponentType<EntityStore,OtherworldData> OWDcomponentType;
     public static ComponentType<EntityStore, PlayerExclusiveEntity> PEEComponentType;
     public static ComponentType<EntityStore, CleanUpComponent> CUCComponentType;
@@ -60,9 +60,7 @@ public class Main extends JavaPlugin {
 
                 Ref<EntityStore> ref = event.getPlayerRef();
                 Store<EntityStore> store = ref.getStore();
-                PlayerRef playerRef = store.getComponent(ref,PlayerRef.getComponentType());
-                assert playerRef != null;
-                OtherworldData owData = store.ensureAndGetComponent(ref, OtherworldData.getComponentType());
+                store.ensureComponent(ref, OtherworldData.getComponentType());
 
             });
 

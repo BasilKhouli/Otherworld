@@ -75,13 +75,14 @@ public class Werewolf extends Race {
             assert statMap != null;
             EntityStatValue currentMana = statMap.get(DefaultEntityStatTypes.getMana());
             assert currentMana != null;
-            final float manaCostPerSecond = 0.3f;
+            final float manaCostPerSecond = !isFullMoon ? 0.3f : 0.6f;
             final float manaCost = Math.min(1,manaCostPerSecond * deltaTime);//if the server lags hard caps the delta time mod
             final float regenDelay = -0.1f;
+            final int ManaRegenDelayIndex = EntityStatType.getAssetMap().getIndex("ManaRegenDelay");
 
             if (currentMana.get() > manaCost) {
                 statMap.subtractStatValue(DefaultEntityStatTypes.getMana(), manaCost);
-                int ManaRegenDelayIndex = EntityStatType.getAssetMap().getIndex("ManaRegenDelay");
+
                 EntityStatValue mtdValue = statMap.get(ManaRegenDelayIndex);
                 if  (mtdValue == null || mtdValue.get() > regenDelay) {
                     statMap.setStatValue(ManaRegenDelayIndex,regenDelay);
@@ -89,6 +90,10 @@ public class Werewolf extends Race {
             }
             else {
                 swapForm = false;
+                EntityStatValue mtdValue = statMap.get(ManaRegenDelayIndex);
+                if  (mtdValue == null || mtdValue.get() > regenDelay*100) {
+                    statMap.setStatValue(ManaRegenDelayIndex,regenDelay*100);
+                }
             }
 
 

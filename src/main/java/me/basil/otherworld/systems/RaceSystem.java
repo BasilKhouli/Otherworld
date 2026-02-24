@@ -62,9 +62,9 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
             if (ability == otherworldData.selectedAbility){
                 ability.selectedTick(deltaTime,ref,playerRef,store,commandBuffer);
             }
-            else{
-                ability.passiveTick(deltaTime, ref, playerRef, store, commandBuffer);
-            }
+
+            ability.passiveTick(deltaTime, ref, playerRef, store, commandBuffer);
+
         }
 
         otherworldData.selectedSlot = newSelectedSlot;
