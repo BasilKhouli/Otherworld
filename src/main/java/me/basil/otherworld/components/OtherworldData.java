@@ -3,6 +3,8 @@ package me.basil.otherworld.components;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.*;
+import com.hypixel.hytale.protocol.Packet;
+import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.Main;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class OtherworldData implements Component<EntityStore> {
 
@@ -183,15 +186,21 @@ public class OtherworldData implements Component<EntityStore> {
         return new OtherworldData();
     }
 
-    public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer) {
+    public void tick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer) {
         if (race != null){
             race.passiveTick(deltaTime,ref,playerRef,store,commandBuffer);
         }
+        for (Ability ability : abilityPool){
+            ability.passiveTick(deltaTime, ref, playerRef, store, commandBuffer);// ability passives
+        }
 
-        //TODO: will call ability passives here too
+        if (selectedAbility != null){
+            selectedAbility.selectedTick(deltaTime,ref,playerRef,store,commandBuffer);
+        }
     }
 
 
-
-
+    public void packetHandling(AtomicBoolean stopPacket, boolean out, GamePacketHandler gpHandler, Packet packet, PlayerRef playerRef) {
+        //TODO WILL CALLED RACES AND ABILITIES FOR PACKET RELATED PASSIVES
+    }
 }

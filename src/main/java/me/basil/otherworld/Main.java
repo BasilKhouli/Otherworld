@@ -2,9 +2,9 @@ package me.basil.otherworld;
 
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.protocol.Packet;import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
-import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import com.hypixel.hytale.server.core.io.PacketHandler;import com.hypixel.hytale.server.core.io.adapter.PacketAdapters;import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -18,8 +18,7 @@ import me.basil.otherworld.systems.CleanUpSystem;
 import me.basil.otherworld.systems.HiddenEntitiesSystem;
 import me.basil.otherworld.systems.RaceSystem;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main extends JavaPlugin {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
@@ -50,23 +49,50 @@ public class Main extends JavaPlugin {
         eSR.registerSystem(new HiddenEntitiesSystem());
         eSR.registerSystem(new CleanUpSystem());
 
-        this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, (event) -> {
+        this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, this::onPlayerReady);
+        PacketAdapters.registerInbound(this::onInBoundPacket);
+        PacketAdapters.registerInbound(this::onOutBoundPacket);
 
+    }
+    private boolean onInBoundPacket(PacketHandler handler,Packet packet){
+        return packetHandling(false,handler,packet);
+    }
+    private boolean onOutBoundPacket(PacketHandler handler,Packet packet){
+        return packetHandling(true,handler,packet);
+    }
 
-            Player player = event.getPlayer();
-            World world = player.getWorld();
-            assert world != null;
-            world.execute(() -> {
+    private boolean packetHandling(boolean out,PacketHandler handler, Packet packet){
+        final AtomicBoolean stopPacket = new AtomicBoolean(false);
+        if (!(handler instanceof GamePacketHandler gpHandler)) return stopPacket.get();
+        PlayerRef playerRef = gpHandler.getPlayerRef();
+        Ref<EntityStore> ref = playerRef.getReference();
+        if (ref == null) return stopPacket.get();
+        Store<EntityStore> store = ref.getStore();
+        World world = store.getExternalData().getWorld();
 
-                Ref<EntityStore> ref = event.getPlayerRef();
-                Store<EntityStore> store = ref.getStore();
-                store.ensureComponent(ref, OtherworldData.getComponentType());
+        world.execute(()->{
+            OtherworldData owd = store.getComponent(ref,OtherworldData.getComponentType());
+            if (owd == null) {
+                return;
+            }
 
-            });
-
+            owd.packetHandling(stopPacket,out,gpHandler,packet,playerRef);
         });
 
+        return stopPacket.get();
+    }
 
+    private void onPlayerReady(PlayerReadyEvent event){
+        Player player = event.getPlayer();
+        World world = player.getWorld();
+        assert world != null;
+        world.execute(() -> {
+
+            Ref<EntityStore> ref = event.getPlayerRef();
+            Store<EntityStore> store = ref.getStore();
+            store.ensureComponent(ref, OtherworldData.getComponentType());
+
+        });
     }
 
 }

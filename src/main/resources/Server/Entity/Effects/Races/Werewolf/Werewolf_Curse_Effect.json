@@ -1,24 +1,17 @@
 {
   "Infinite": true,
   "RawStatModifiers": {
-    "Mana": [
-      {
-        "Target": "Max",
-        "CalculationType": "Multiplicative",
-        "Amount": 0.5
-      }
-    ],
     "Health": [
       {
         "CalculationType": "Multiplicative",
-        "Amount": 2
+        "Amount": 1.5
       }
     ],
     "Stamina": [
       {
         "Target": "Max",
         "CalculationType": "Multiplicative",
-        "Amount": 1.5
+        "Amount": 2
       }
     ]
   },
