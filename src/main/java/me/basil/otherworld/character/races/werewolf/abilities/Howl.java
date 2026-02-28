@@ -52,7 +52,7 @@ public class Howl extends Ability {
         if (isWalking) {
             if (!wasWalking) {
                 if (cooldown <= 0){
-                    cooldown += 3f;
+                    cooldown += 15f;
                     SpatialResource<Ref<EntityStore>, EntityStore> spatialResource = store.getResource(EntityModule.get().getEntitySpatialResourceType());
                     ObjectList<Ref<EntityStore>> results = SpatialResource.getThreadLocalReferenceList();
                     final float range = 10;
