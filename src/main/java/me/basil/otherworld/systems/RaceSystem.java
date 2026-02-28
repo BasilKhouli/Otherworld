@@ -49,16 +49,23 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
                 otherworldData.selectedAbility.unselected(ref,playerRef,store,commandBuffer);
             }
             if (newSelectedSkill != null){
-                NotificationUtil.sendNotification(playerRef.getPacketHandler(), Message.raw("["+ newSelectedSlot +"]" +"Selected :"+ newSelectedSkill.name));
+                Message notifMessage = Message.join(Message.raw("["+ newSelectedSlot +"]" +"Selected :"),newSelectedSkill.getAbilityMessage(playerRef));
+                NotificationUtil.sendNotification(playerRef.getPacketHandler(), notifMessage);
                 newSelectedSkill.selected(ref,playerRef,store,commandBuffer);
             }
             otherworldData.selectedAbility = newSelectedSkill;
         }
         otherworldData.selectedSlot = newSelectedSlot;
 
-        otherworldData.tick(deltaTime,ref,playerRef,store,commandBuffer); // race passives
+        otherworldData.tick(deltaTime,ref,playerRef,store,commandBuffer);
+
+
+
+
 
     }
+
+
 
     @Override
     public @Nullable Query<EntityStore> getQuery() {

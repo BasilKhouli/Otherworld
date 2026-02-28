@@ -14,6 +14,7 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
 import com.hypixel.hytale.server.core.modules.entity.component.*;
 import com.hypixel.hytale.server.core.modules.entity.tracker.NetworkId;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
@@ -36,6 +37,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.IntPredicate;
 
 public class Vampire extends Race {
@@ -76,6 +78,11 @@ public class Vampire extends Race {
         burnInSunlight(deltaTime,ref,playerRef,store,commandBuffer);
         darkSightPassiveEntityTest(ref,playerRef,store,commandBuffer);
 
+
+    }
+
+    @Override
+    public void handlePacket(AtomicBoolean stopPacket, boolean out, GamePacketHandler gpHandler, Packet packet, PlayerRef playerRef) {
 
     }
 

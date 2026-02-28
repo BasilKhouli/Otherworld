@@ -4,6 +4,7 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.InteractionType;
+import com.hypixel.hytale.protocol.Packet;
 import com.hypixel.hytale.protocol.packets.interaction.SyncInteractionChain;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
@@ -18,6 +19,7 @@ import me.basil.otherworld.character.races.werewolf.Werewolf;
 import me.basil.otherworld.components.OtherworldData;
 
 import java.util.Deque;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DarkSightToggle extends Ability {
 	public DarkSightToggle() {
@@ -62,6 +64,11 @@ public class DarkSightToggle extends Ability {
 
     @Override
     public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer) {
+
+    }
+
+    @Override
+    public void handlePacket(AtomicBoolean stopPacket, boolean out, GamePacketHandler gpHandler, Packet packet, PlayerRef playerRef) {
 
     }
 

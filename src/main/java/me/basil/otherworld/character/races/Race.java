@@ -5,13 +5,18 @@ import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.protocol.Packet;
 import com.hypixel.hytale.server.core.asset.type.entityeffect.config.EntityEffect;
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
+import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
+import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
+import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 public abstract class Race {
@@ -20,6 +25,8 @@ public abstract class Race {
     private final Map<String,Ability> abilities = new HashMap<>();
     private final Map<String,Integer> appliedEffectIDs = new HashMap<>();
     protected final Map<String,Runnable> removalCallbacks = new HashMap<>();
+
+    public final Map<String,GeneralModifier> speedModifiers = new HashMap<>();
 
     public Ability[] defaultEquippedAbilities;
 
@@ -140,8 +147,31 @@ public abstract class Race {
         return Arrays.stream(effectController.getActiveEffectIndexes()).anyMatch(index -> index == effectIndex);
     }
 
+    public void applySpeedModifiers(PlayerRef playerRef,Ref<EntityStore> ref, ComponentAccessor<EntityStore> componentAccessor) {
+        MovementManager movementManager = componentAccessor.getComponent(ref, MovementManager.getComponentType());
 
+        if (movementManager == null) return;
+        movementManager.resetDefaultsAndUpdate(ref,componentAccessor);
+
+        float totalMultiplier = 1;
+        float totalAdded = 0;
+        for (GeneralModifier modifier : speedModifiers.values()) {
+            if (modifier.multiplied) {
+                totalMultiplier *= modifier.value;
+            } else {
+                totalAdded += modifier.value;
+            }
+        }
+
+
+        float baseWalkSpeed = movementManager.getDefaultSettings().baseSpeed;
+        float newWalkSpeed = (baseWalkSpeed * totalMultiplier)+totalAdded;
+
+        movementManager.getSettings().baseSpeed = newWalkSpeed;
+        movementManager.update(playerRef.getPacketHandler());
+    }
 
     //can make an empty method instead of abstract is wanted
     public abstract void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer);
+    public abstract void handlePacket(AtomicBoolean stopPacket, boolean out, GamePacketHandler gpHandler, Packet packet, PlayerRef playerRef);
 }

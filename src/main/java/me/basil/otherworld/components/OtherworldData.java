@@ -4,6 +4,7 @@ import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.protocol.Packet;
+import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -25,6 +26,7 @@ public class OtherworldData implements Component<EntityStore> {
     private Race race;
     private final Ability[] equippedAbilities = new Ability[9];
     private final List<Ability> abilityPool = new ArrayList<>();
+
 
     public int selectedSlot;
     public Ability selectedAbility;
@@ -120,7 +122,9 @@ public class OtherworldData implements Component<EntityStore> {
             if (abilityPool.stream().anyMatch((Ability poolAbility)-> poolAbility.name.equals(abilityName))){
                 ability = abilityPool.stream().filter((Ability poolAbility)-> poolAbility.name.equals(abilityName)).findFirst().orElse(ability);
             }
-            else abilityPool.add(ability);
+            else {
+                abilityPool.add(ability);
+            }
 
             //call equipped here
         }
@@ -189,8 +193,19 @@ public class OtherworldData implements Component<EntityStore> {
     public void tick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, @NonNull Store<EntityStore> store, @NonNull CommandBuffer<EntityStore> commandBuffer) {
         if (race != null){
             race.passiveTick(deltaTime,ref,playerRef,store,commandBuffer);
+            race.applySpeedModifiers(playerRef,ref,commandBuffer);
+        }else{
+            MovementManager movementManager = commandBuffer.getComponent(ref, MovementManager.getComponentType());
+            if (movementManager != null) {
+                movementManager.resetDefaultsAndUpdate(ref,commandBuffer)   ;
+            }
         }
+
+
         for (Ability ability : abilityPool){
+            if (ability.cooldown > 0){
+                ability.cooldown -= deltaTime;
+            }
             ability.passiveTick(deltaTime, ref, playerRef, store, commandBuffer);// ability passives
         }
 
@@ -201,6 +216,11 @@ public class OtherworldData implements Component<EntityStore> {
 
 
     public void packetHandling(AtomicBoolean stopPacket, boolean out, GamePacketHandler gpHandler, Packet packet, PlayerRef playerRef) {
-        //TODO WILL CALLED RACES AND ABILITIES FOR PACKET RELATED PASSIVES
+        if (race != null){
+            race.handlePacket(stopPacket,out,gpHandler,packet,playerRef);
+        }
+        for (Ability ability : abilityPool){
+            ability.handlePacket(stopPacket,out,gpHandler,packet,playerRef);// ability passives
+        }
     }
 }

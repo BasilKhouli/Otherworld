@@ -3,7 +3,9 @@ package me.basil.otherworld.character.races.vampire.abilities;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.protocol.Packet;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
+import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
 import com.hypixel.hytale.server.core.modules.entity.damage.Damage;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageCause;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageSystems;
@@ -15,6 +17,8 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import me.basil.otherworld.character.races.Ability;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Drain extends Ability {
     public Drain() {
@@ -129,6 +133,11 @@ public class Drain extends Ability {
         } else if (cooldown<0) {
             cooldown = 0;
         }
+    }
+
+    @Override
+    public void handlePacket(AtomicBoolean stopPacket, boolean out, GamePacketHandler gpHandler, Packet packet, PlayerRef playerRef) {
+
     }
 
     @Override

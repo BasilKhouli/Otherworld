@@ -3,8 +3,15 @@
     "Fall": [
       {
         "Target": "Max",
-        "CalculationType": "Multiplicative",
+        "CalculationType": "Additive",
         "Amount": 1000
+      }
+    ],
+    "Fire": [
+      {
+        "Target": "Max",
+        "CalculationType": "Multiplicative",
+        "Amount": -0.5
       }
     ]
   },
