@@ -151,7 +151,7 @@ public abstract class Race {
         MovementManager movementManager = componentAccessor.getComponent(ref, MovementManager.getComponentType());
 
         if (movementManager == null) return;
-        movementManager.resetDefaultsAndUpdate(ref,componentAccessor);
+        movementManager.getSettings().baseSpeed = movementManager.getDefaultSettings().baseSpeed;
 
         float totalMultiplier = 1;
         float totalAdded = 0;

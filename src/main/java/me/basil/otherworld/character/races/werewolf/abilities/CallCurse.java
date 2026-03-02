@@ -50,11 +50,13 @@ public class CallCurse extends Ability {
                     if (!(owd.getRace() instanceof Werewolf werewolfRace)) {
                         return;
                     }
+
                     werewolfRace.swapForm = !werewolfRace.swapForm;
                     NotificationUtil.sendNotification(playerRef.getPacketHandler(),Message.raw("Swapped"));
                     if (werewolfRace.swapForm) {
                         started = true;
                     }
+
                 }
                 else {
                     NotificationUtil.sendNotification(playerRef.getPacketHandler(),getAbilityMessage(playerRef));

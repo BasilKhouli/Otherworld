@@ -49,7 +49,7 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
                 otherworldData.selectedAbility.unselected(ref,playerRef,store,commandBuffer);
             }
             if (newSelectedSkill != null){
-                Message notifMessage = Message.join(Message.raw("["+ newSelectedSlot +"]" +"Selected :"),newSelectedSkill.getAbilityMessage(playerRef));
+                Message notifMessage = Message.join(Message.raw("["+ newSelectedSlot +"]" +"Selected: "),newSelectedSkill.getAbilityMessage(playerRef));
                 NotificationUtil.sendNotification(playerRef.getPacketHandler(), notifMessage);
                 newSelectedSkill.selected(ref,playerRef,store,commandBuffer);
             }

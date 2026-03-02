@@ -14,5 +14,8 @@
   "OptionalDependencies": {},
   "DisabledByDefault": false,
   "IncludesAssetPack": true,
-  "Main": "${plugin_main_entrypoint}"
+  "Main": "${plugin_main_entrypoint}",
+  "LoadBefore": {
+    "Hytale:AssetEditor": "*"
+  }
 }

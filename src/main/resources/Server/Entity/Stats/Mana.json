@@ -27,6 +27,21 @@
           "Amount": 0
         }
       ]
+    },
+    {
+      "$Comment": "Player in creative mode",
+      "Interval": 0.5,
+      "Amount": 1.0,
+      "RegenType": "Percentage",
+      "Conditions": [
+        {
+          "Id": "Alive"
+        },
+        {
+          "Id": "Player",
+          "GameMode": "Creative"
+        }
+      ]
     }
   ]
 }
