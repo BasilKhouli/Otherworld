@@ -24,10 +24,12 @@ import com.hypixel.hytale.server.npc.role.Role;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
+import me.basil.otherworld.character.races.vampire.Vampire;
 import me.basil.otherworld.character.races.werewolf.ActionPathAwayFrom;
 import me.basil.otherworld.character.races.werewolf.Werewolf;
 import me.basil.otherworld.components.OtherworldData;
 
+import java.awt.*;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,6 +38,7 @@ public class Howl extends Ability {
         super("Howl","Unleash a powerful roar to knockback and fear enemies","Press Walk[Left Alt] button");
 
     }
+    Werewolf werewolfRace = null;
 
     @Override
     public void selected(Ref<EntityStore> ref, PlayerRef playerRef, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer) {
@@ -53,13 +56,20 @@ public class Howl extends Ability {
         boolean isWalking = movementStatesComponent.getMovementStates().walking;
         var position = transformComponent.getPosition().clone();
 
+
         if (isWalking) {
             if (!wasWalking) {
-                if (cooldown <= 0){
-                    preformHowl(deltaTime, ref, playerRef, store, commandBuffer, position);
-                }else {
-                    NotificationUtil.sendNotification(playerRef.getPacketHandler(),getAbilityMessage(playerRef));
+                if (werewolfRace != null && werewolfRace.curseActive) {
+                    if (cooldown <= 0){
+                        preformHowl(deltaTime, ref, playerRef, store, commandBuffer, position);
+                    }else {
+                        NotificationUtil.sendNotification(playerRef.getPacketHandler(),getAbilityMessage(playerRef));
+                    }
                 }
+                else {
+                    NotificationUtil.sendNotification(playerRef.getPacketHandler(),Message.raw("You can only howl as a werewolf").color(Color.red));
+                }
+
             }
 
         }
@@ -67,7 +77,7 @@ public class Howl extends Ability {
     }
 
     private void preformHowl(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer, Vector3d position) {
-        cooldown += 1f;
+        cooldown += 15f;
         SpatialResource<Ref<EntityStore>, EntityStore> spatialResource = store.getResource(EntityModule.get().getEntitySpatialResourceType());
         ObjectList<Ref<EntityStore>> results = SpatialResource.getThreadLocalReferenceList();
         final float range = 10;
@@ -92,7 +102,7 @@ public class Howl extends Ability {
                     Role role = npc.getRole();
                     int roleIndex = npc.getRoleIndex();
 
-                    Action action = new ActionPathAwayFrom(position, entityPos, 10);
+                    Action action = new ActionPathAwayFrom(position, 10.0);
 
 
                     world.execute(()->{
@@ -158,10 +168,26 @@ public class Howl extends Ability {
 
     @Override
     public void passiveTick(float deltaTime, Ref<EntityStore> ref, PlayerRef playerRef, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer) {
+        OtherworldData owd = store.getComponent(ref, OtherworldData.getComponentType());
+        assert owd != null;
+        if (!(owd.getRace() instanceof Werewolf)) {
+            werewolfRace = null;
+            return;
+        }
+        werewolfRace = (Werewolf) owd.getRace();
     }
 
     @Override
     public void handlePacket(AtomicBoolean stopPacket, boolean out, GamePacketHandler gpHandler, Packet packet, PlayerRef playerRef) {
+
+    }
+
+    @Override
+    public Message getAbilityMessage(PlayerRef playerRef) {
+        if (werewolfRace == null || werewolfRace.curseActive){
+            return super.getAbilityMessage(playerRef);
+        }
+        return Message.join(super.getAbilityMessage(playerRef).color(Color.red),Message.raw(" (WW Only)"));
 
     }
 

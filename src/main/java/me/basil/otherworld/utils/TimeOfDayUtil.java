@@ -9,9 +9,9 @@ public class TimeOfDayUtil {
     public static boolean isDayTime(Store<EntityStore> store){
         WorldTimeResource timeResource = store.getResource(WorldTimeResource.getResourceType());
 
+        var dayProgress = timeResource.getDayProgress();
 
-
-        return timeResource.getDayProgress() > 0.25 && timeResource.getDayProgress() < 0.75;
+        return dayProgress > 0.20 && dayProgress < 0.79;
     }
 
 

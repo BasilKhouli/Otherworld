@@ -8,11 +8,14 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.entity.entities.player.hud.CustomUIHud;
+import com.hypixel.hytale.server.core.entity.entities.player.hud.HudManager;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.NotificationUtil;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.components.OtherworldData;
+import me.basil.otherworld.ui.huds.SkillList;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -50,7 +53,7 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
             }
             if (newSelectedSkill != null){
                 Message notifMessage = Message.join(Message.raw("["+ newSelectedSlot +"]" +"Selected: "),newSelectedSkill.getAbilityMessage(playerRef));
-                NotificationUtil.sendNotification(playerRef.getPacketHandler(), notifMessage);
+                //NotificationUtil.sendNotification(playerRef.getPacketHandler(), notifMessage);
                 newSelectedSkill.selected(ref,playerRef,store,commandBuffer);
             }
             otherworldData.selectedAbility = newSelectedSkill;
@@ -60,8 +63,17 @@ public class RaceSystem extends EntityTickingSystem<EntityStore> {
         otherworldData.tick(deltaTime,ref,playerRef,store,commandBuffer);
 
 
-
-
+        HudManager hudManager = player.getHudManager();
+        CustomUIHud customHud = hudManager.getCustomHud();
+        SkillList skillList = null;
+        if (!(customHud instanceof SkillList)){
+            skillList = new SkillList(playerRef);
+            hudManager.setCustomHud(playerRef,skillList);
+        }
+        else {
+            skillList  = (SkillList)customHud;
+        }
+        skillList.updateDisplay(otherworldData);
 
     }
 

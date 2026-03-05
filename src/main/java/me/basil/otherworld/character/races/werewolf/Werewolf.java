@@ -19,6 +19,7 @@ import me.basil.otherworld.character.races.GeneralModifier;
 import me.basil.otherworld.character.races.Race;
 import me.basil.otherworld.character.races.werewolf.abilities.CallCurse;
 import me.basil.otherworld.character.races.werewolf.abilities.Howl;
+import me.basil.otherworld.components.OtherworldData;
 import me.basil.otherworld.utils.TimeOfDayUtil;
 import org.jspecify.annotations.NonNull;
 
@@ -51,10 +52,12 @@ public class Werewolf extends Race {
         EffectControllerComponent  effectControllerComponent = store.getComponent(ref, EffectControllerComponent.getComponentType());
         assert effectControllerComponent != null;
 
+
+
         addEffect("Passive", Passive_EFFECT_ID,ref,commandBuffer,effectControllerComponent);
 
-
-        boolean isFullMoon = timeResource.getMoonPhase() == 0 && !TimeOfDayUtil.isDayTime(store);
+        boolean dayTime = TimeOfDayUtil.isDayTime(store);
+        boolean isFullMoon = timeResource.getMoonPhase() == 0 && !dayTime;
         boolean shouldBeWerewolf = (isFullMoon != swapForm) || forceCurse;
         boolean wrongFrom = swapForm && !forceCurse;
 
@@ -63,7 +66,7 @@ public class Werewolf extends Race {
             assert statMap != null;
             EntityStatValue currentMana = statMap.get(DefaultEntityStatTypes.getMana());
             assert currentMana != null;
-            final float manaCostPerSecond = !isFullMoon ? 0.3f : 0.6f;
+            final float manaCostPerSecond = !isFullMoon ? dayTime? 0.6f:0.3f : 1f;
             final float manaCost = Math.min(1,manaCostPerSecond * deltaTime);//if the server lags hard caps the delta time mod
             final float regenDelay = -0.1f;
             final int ManaRegenDelayIndex = EntityStatType.getAssetMap().getIndex("ManaRegenDelay");

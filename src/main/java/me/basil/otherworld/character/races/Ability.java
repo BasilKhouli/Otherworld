@@ -52,7 +52,7 @@ public abstract class Ability {
         Message abilityMessage = Message.raw(name);
         if (cooldown > 0){
             abilityMessage.color(Color.red);
-            abilityMessage = Message.join(abilityMessage, Message.raw("("+cooldown+"s)"));
+            abilityMessage = Message.join(abilityMessage, Message.raw(" ("+String.format("%.1f",cooldown)+"s)"));
 
         }
         return abilityMessage;

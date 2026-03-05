@@ -1,0 +1,60 @@
+$C = "../../Common.ui";
+@AbilityStyle = LabelStyle(
+    FontSize: 16,
+    RenderBold: true,
+    TextColor: #ffffffff,
+    HorizontalAlignment: End,
+    VerticalAlignment: Center
+);
+
+@AbilityName = Label {
+    Anchor: (Height: 20);
+    Text: "Ability Name (CD)";
+    FlexWeight: 1;
+    Style: @AbilityStyle;
+};
+
+$C.@Panel #OWHudBase {
+    Anchor: (Right: 40, Width: 204, Height: 280);
+    Padding: (Full: 10);
+    LayoutMode: Top;
+
+    Label #RaceName {
+        Anchor: (Height: 40);
+        Text: "Human";
+        Style: (HorizontalAlignment: End,TextColor: #ffffffff, VerticalAlignment: Start, FontSize: 30, RenderBold: true);
+    }
+
+    Group #SkillList {
+        LayoutMode: Top;
+        Anchor: (Top: 10);
+        FlexWeight: 1;
+
+        @AbilityName #Ability1 {
+        }
+
+        @AbilityName #Ability2 {
+        }
+
+        @AbilityName #Ability3 {
+        }
+
+        @AbilityName #Ability4 {
+        }
+
+        @AbilityName #Ability5 {
+        }
+
+        @AbilityName #Ability6 {
+        }
+
+        @AbilityName #Ability7 {
+        }
+
+        @AbilityName #Ability8 {
+        }
+
+        @AbilityName #Ability9 {
+        }
+    }
+}
