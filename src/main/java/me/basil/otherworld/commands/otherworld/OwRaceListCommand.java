@@ -1,4 +1,4 @@
-package me.basil.otherworld.commands;
+package me.basil.otherworld.commands.otherworld;
 
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
@@ -13,7 +13,6 @@ import me.basil.otherworld.character.races.Race;
 import me.basil.otherworld.character.races.RaceManager;
 import org.jspecify.annotations.NonNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class OwRaceListCommand extends AbstractPlayerCommand {

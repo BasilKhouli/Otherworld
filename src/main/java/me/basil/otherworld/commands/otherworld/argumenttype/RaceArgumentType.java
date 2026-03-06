@@ -1,4 +1,4 @@
-package me.basil.otherworld.commands.ArgumentType;
+package me.basil.otherworld.commands.otherworld.argumenttype;
 
 import com.hypixel.hytale.common.util.StringUtil;
 import com.hypixel.hytale.server.core.Message;
@@ -6,13 +6,7 @@ import com.hypixel.hytale.server.core.command.system.CommandUtil;
 import com.hypixel.hytale.server.core.command.system.ParseResult;
 import com.hypixel.hytale.server.core.command.system.arguments.types.SingleArgumentType;
 import me.basil.otherworld.character.races.Race;
-import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.hypixel.hytale.component.CommandBuffer;
 import me.basil.otherworld.character.races.RaceManager;
-import org.jspecify.annotations.NonNull;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.List;

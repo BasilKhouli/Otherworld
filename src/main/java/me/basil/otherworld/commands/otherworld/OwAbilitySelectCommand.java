@@ -1,4 +1,4 @@
-package me.basil.otherworld.commands;
+package me.basil.otherworld.commands.otherworld;
 
 import com.hypixel.hytale.common.util.StringUtil;
 import com.hypixel.hytale.component.Ref;
@@ -20,7 +20,6 @@ import me.basil.otherworld.character.races.Race;
 import me.basil.otherworld.components.OtherworldData;
 import org.jspecify.annotations.NonNull;
 
-import java.awt.*;
 import java.util.List;
 
 public class OwAbilitySelectCommand extends AbstractPlayerCommand{

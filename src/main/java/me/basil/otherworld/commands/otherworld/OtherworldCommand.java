@@ -1,4 +1,5 @@
-package me.basil.otherworld.commands;
+package me.basil.otherworld.commands.otherworld;
+
 
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
@@ -9,28 +10,34 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayer
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import me.basil.otherworld.character.races.Race;
 import me.basil.otherworld.components.OtherworldData;
 import org.jspecify.annotations.NonNull;
 
-import java.awt.*;
+import java.util.Arrays;
 
-public class OwRaceClearCommand extends AbstractPlayerCommand {
-    public OwRaceClearCommand() {
-        super("clear","clear your race and become human");
+
+public class OtherworldCommand extends AbstractPlayerCommand {
+
+
+    public OtherworldCommand() {
+        super("otherworld", "Command for all things Otherworld related");
+        addAliases("ow");
         setPermissionGroup(GameMode.Adventure);
+        addSubCommand(new OwAbilitySelectCommand());
+        addSubCommand(new OwRaceSelectCommand());
 
     }
 
     @Override
     protected void execute(@NonNull CommandContext commandContext, @NonNull Store<EntityStore> store, @NonNull Ref<EntityStore> ref, @NonNull PlayerRef playerRef, @NonNull World world) {
-        OtherworldData owd = store.getComponent(ref,OtherworldData.getComponentType());
-        if (owd == null) {
-            commandContext.sendMessage(Message.raw("An error occurred! Rejoin the server and try again, if the problem persist report to devs").color(Color.red));
+        OtherworldData owData = store.getComponent(ref, OtherworldData.getComponentType());
+        if (owData == null || owData.getRace() == null){
+            playerRef.sendMessage(Message.raw("Human (select a race with /otherworld race <race>)"));
             return;
         }
-
-        owd.chooseRace(null);
-        commandContext.sendMessage(Message.raw("The race has been cleared! You are now a human"));
+        playerRef.sendMessage(Message.raw("Race: " + owData.getRace().getName()));
+        playerRef.sendMessage(Message.raw("Skills: " + Arrays.toString(owData.getEquippedAbilityNames())));
     }
+
+
 }

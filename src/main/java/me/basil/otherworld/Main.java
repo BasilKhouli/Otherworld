@@ -10,7 +10,8 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.character.races.RaceManager;
-import me.basil.otherworld.commands.OtherworldCommand;
+import me.basil.otherworld.commands.otherworld.OtherworldCommand;
+import me.basil.otherworld.commands.reputation.ReputationCommand;
 import me.basil.otherworld.components.CleanUpComponent;
 import me.basil.otherworld.components.OtherworldData;
 import me.basil.otherworld.components.PlayerExclusiveEntity;
@@ -38,6 +39,7 @@ public class Main extends JavaPlugin {
         RaceManager.initialize();
 
         this.getCommandRegistry().registerCommand(new OtherworldCommand());
+        this.getCommandRegistry().registerCommand(new ReputationCommand());
 
         ComponentRegistryProxy<EntityStore> eSR =this.getEntityStoreRegistry();
 

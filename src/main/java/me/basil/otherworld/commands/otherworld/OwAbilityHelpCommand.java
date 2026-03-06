@@ -1,4 +1,4 @@
-package me.basil.otherworld.commands;
+package me.basil.otherworld.commands.otherworld;
 
 import com.hypixel.hytale.common.util.StringUtil;
 import com.hypixel.hytale.component.Ref;
@@ -16,7 +16,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
-import me.basil.otherworld.commands.ArgumentType.RaceArgumentType;
+import me.basil.otherworld.commands.otherworld.argumenttype.RaceArgumentType;
 import me.basil.otherworld.components.OtherworldData;
 import org.jspecify.annotations.NonNull;
 

@@ -19,13 +19,10 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.NotificationUtil;
 import com.hypixel.hytale.server.npc.NPCPlugin;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
-import com.hypixel.hytale.server.npc.instructions.Action;
 import com.hypixel.hytale.server.npc.role.Role;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.Race;
-import me.basil.otherworld.character.races.vampire.Vampire;
-import me.basil.otherworld.character.races.werewolf.ActionPathAwayFrom;
 import me.basil.otherworld.character.races.werewolf.Werewolf;
 import me.basil.otherworld.components.OtherworldData;
 
@@ -102,13 +99,11 @@ public class Howl extends Ability {
                     Role role = npc.getRole();
                     int roleIndex = npc.getRoleIndex();
 
-                    Action action = new ActionPathAwayFrom(position, 10.0);
 
 
-                    world.execute(()->{
-                        //TODO Make this actually work
-                        action.execute(entityRef, role, null, deltaTime, store);
-                    });
+
+
+
 
                     //Apply (fear somehow)
                     continue;
