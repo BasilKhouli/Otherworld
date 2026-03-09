@@ -55,11 +55,10 @@ public class ReputationSetCommand extends AbstractTargetPlayerCommand {
       int newReputationValue;
       PlayerConfigData playerConfigData = player.getPlayerConfigData();
       Object2IntOpenHashMap<String> reputationData = new Object2IntOpenHashMap<>(playerConfigData.getReputationData());
-      newReputationValue = value;
-      reputationData.put(reputationGroup.getId(),newReputationValue);
+      reputationData.put(reputationGroup.getId(),value);
       playerConfigData.setReputationData(reputationData);
 
 
-      context.sendMessage(Message.translation("server.modules.reputation.success").param("id", reputationGroup.getId()).param("value", newReputationValue));
+      context.sendMessage(Message.translation("server.modules.reputation.success").param("id", reputationGroup.getId()).param("value", value));
    }
 }

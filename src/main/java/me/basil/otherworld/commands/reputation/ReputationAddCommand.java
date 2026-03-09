@@ -53,7 +53,6 @@ public class ReputationAddCommand extends AbstractTargetPlayerCommand {
 
       assert player != null;
 
-      //int newReputationAmount = ReputationPlugin.get().changeReputation(playerComponent, reputationGroup.getId(), value, store);
       int newReputationValue;
       PlayerConfigData playerConfigData = player.getPlayerConfigData();
       Object2IntOpenHashMap<String> reputationData = new Object2IntOpenHashMap<>(playerConfigData.getReputationData());

@@ -6,6 +6,8 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.Packet;
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
+import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.entity.entities.player.data.PlayerConfigData;
 import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
@@ -14,6 +16,7 @@ import com.hypixel.hytale.server.core.modules.entitystats.asset.EntityStatType;
 import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import me.basil.otherworld.character.races.Ability;
 import me.basil.otherworld.character.races.GeneralModifier;
 import me.basil.otherworld.character.races.Race;
@@ -42,6 +45,7 @@ public class Werewolf extends Race {
 
     private static final String Passive_EFFECT_ID = "Werewolf_Passive_Effect";
     private static final String CURSE_EFFECT_ID = "Werewolf_Curse_Effect";
+    private static final String HOSTILES_REP_GROUP_ID ="Hostiles_Reputation_Group" ;
     public boolean forceCurse = false;
     public boolean swapForm = false;
     public boolean curseActive = false;
@@ -52,6 +56,9 @@ public class Werewolf extends Race {
         EffectControllerComponent  effectControllerComponent = store.getComponent(ref, EffectControllerComponent.getComponentType());
         assert effectControllerComponent != null;
 
+        Player player = store.getComponent(ref,Player.getComponentType());
+        if (player == null) return;
+        PlayerConfigData playerConfigData = player.getPlayerConfigData();
 
 
         addEffect("Passive", Passive_EFFECT_ID,ref,commandBuffer,effectControllerComponent);
@@ -93,6 +100,9 @@ public class Werewolf extends Race {
 
             if (!curseActive) {
                 curseActive = true;
+                Object2IntOpenHashMap<String> reputationData = new Object2IntOpenHashMap<>(playerConfigData.getReputationData());
+                reputationData.put(HOSTILES_REP_GROUP_ID,1);
+                playerConfigData.setReputationData(reputationData);
                 addEffect("Curse", CURSE_EFFECT_ID,ref,commandBuffer,effectControllerComponent);
                 speedModifiers.put("Curse",new GeneralModifier(1.20f,true ));
                 if (isFullMoon && !swapForm) { //plays on natural full Moon Transformation
@@ -104,6 +114,9 @@ public class Werewolf extends Race {
             speedModifiers.put("Passive",new GeneralModifier(0.85f,true ));
             if (curseActive) {
                 curseActive = false;
+                Object2IntOpenHashMap<String> reputationData = new Object2IntOpenHashMap<>(playerConfigData.getReputationData());
+                reputationData.put(HOSTILES_REP_GROUP_ID,0);
+                playerConfigData.setReputationData(reputationData);
                 speedModifiers.remove("Curse");
                 removeEffect("Curse",ref,commandBuffer,effectControllerComponent);
             }
@@ -131,6 +144,16 @@ public class Werewolf extends Race {
     @Override
     public void removed(PlayerRef playerRef, ComponentAccessor<EntityStore> componentAccessor) {
         super.removed(playerRef, componentAccessor);
+        Ref<EntityStore> ref= playerRef.getReference();
+        if (ref == null) return;
+        Player player = componentAccessor.getComponent(ref,Player.getComponentType());
+        if (player == null) return;
+        PlayerConfigData playerConfigData = player.getPlayerConfigData();
+
+
+        Object2IntOpenHashMap<String> reputationData = new Object2IntOpenHashMap<>(playerConfigData.getReputationData());
+        reputationData.put(HOSTILES_REP_GROUP_ID,0);
+        playerConfigData.setReputationData(reputationData);
 
     }
 

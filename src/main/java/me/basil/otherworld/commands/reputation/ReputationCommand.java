@@ -1,5 +1,7 @@
 package me.basil.otherworld.commands.reputation;
 
+import com.hypixel.hytale.builtin.adventure.reputation.command.ReputationRankCommand;
+import com.hypixel.hytale.builtin.adventure.reputation.command.ReputationValueCommand;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractCommandCollection;
 
 public class ReputationCommand extends AbstractCommandCollection {
