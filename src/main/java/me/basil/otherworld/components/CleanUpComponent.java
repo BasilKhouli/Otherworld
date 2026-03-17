@@ -25,7 +25,7 @@ public class CleanUpComponent implements Component<EntityStore> {
             .build();
 
     public static ComponentType<EntityStore,CleanUpComponent> getComponentType() {
-        return Main.CUCComponentType;
+        return Main.getComponentType(CleanUpComponent.class);
     }
 
     @Override

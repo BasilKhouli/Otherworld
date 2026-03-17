@@ -93,6 +93,7 @@ public class OtherworldData implements Component<EntityStore> {
 
 
 
+
     }
 
     public void addAbility(String abilityName, int slot){
@@ -182,7 +183,7 @@ public class OtherworldData implements Component<EntityStore> {
     }
 
     public static ComponentType<EntityStore,OtherworldData> getComponentType(){
-        return Main.OWDcomponentType;
+        return Main.getComponentType(OtherworldData.class);
     }
 
     @Override

@@ -29,7 +29,7 @@ public class PlayerExclusiveEntity implements Component<EntityStore> {
     }
 
     public static ComponentType<EntityStore,PlayerExclusiveEntity> getComponentType(){
-        return Main.PEEComponentType;
+        return Main.getComponentType(PlayerExclusiveEntity.class);
     }
 
     @Override

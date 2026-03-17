@@ -13,21 +13,29 @@ import me.basil.otherworld.character.races.RaceManager;
 import me.basil.otherworld.commands.otherworld.OtherworldCommand;
 import me.basil.otherworld.commands.reputation.ReputationCommand;
 import me.basil.otherworld.components.CleanUpComponent;
+import me.basil.otherworld.components.InteractionOverwriterComponent;
 import me.basil.otherworld.components.OtherworldData;
 import me.basil.otherworld.components.PlayerExclusiveEntity;
 import me.basil.otherworld.systems.CleanUpSystem;
 import me.basil.otherworld.systems.HiddenEntitiesSystem;
+import me.basil.otherworld.systems.InteractionOverwriterSystem;
 import me.basil.otherworld.systems.RaceSystem;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main extends JavaPlugin {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
-    //Component Types
-    public static ComponentType<EntityStore,OtherworldData> OWDcomponentType;
-    public static ComponentType<EntityStore, PlayerExclusiveEntity> PEEComponentType;
-    public static ComponentType<EntityStore, CleanUpComponent> CUCComponentType;
+    private static final Map<Class<? extends Component<EntityStore>>,ComponentType<EntityStore,? extends Component<EntityStore>>> componentTypeMap = new java.util.HashMap<>();
+    
+    public static <T extends Component<EntityStore>> ComponentType<EntityStore,T> getComponentType(Class<T> clazz){
+        return (ComponentType<EntityStore,T>) componentTypeMap.get(clazz);
+    }
+    
+    public static <T extends Component<EntityStore>> void registerComponentType(Class<T> clazz, ComponentType<EntityStore,T> componentType){
+        componentTypeMap.put(clazz, componentType);
+    }
 
     public Main(JavaPluginInit init) {
         super(init);
@@ -43,19 +51,23 @@ public class Main extends JavaPlugin {
 
         ComponentRegistryProxy<EntityStore> eSR =this.getEntityStoreRegistry();
 
-        OWDcomponentType = eSR.registerComponent(OtherworldData.class,"OtherworldData",OtherworldData.CODEC);
-        PEEComponentType = eSR.registerComponent(PlayerExclusiveEntity.class,"PlayerExclusiveEntity",PlayerExclusiveEntity.CODEC);
-        CUCComponentType = eSR.registerComponent(CleanUpComponent.class,"CleanUpComponent",CleanUpComponent.CODEC);
+        registerComponentType(OtherworldData.class,eSR.registerComponent(OtherworldData.class,"OtherworldData",OtherworldData.CODEC));
+        registerComponentType(PlayerExclusiveEntity.class,eSR.registerComponent(PlayerExclusiveEntity.class,"PlayerExclusiveEntity",PlayerExclusiveEntity.CODEC));
+        registerComponentType(CleanUpComponent.class,eSR.registerComponent(CleanUpComponent.class,"CleanUpComponent",CleanUpComponent.CODEC));
+        registerComponentType(InteractionOverwriterComponent.class,eSR.registerComponent(InteractionOverwriterComponent.class,"InteractionOverwriterComponent", InteractionOverwriterComponent.CODEC));
 
         eSR.registerSystem(new RaceSystem());
         eSR.registerSystem(new HiddenEntitiesSystem());
         eSR.registerSystem(new CleanUpSystem());
+        eSR.registerSystem(new InteractionOverwriterSystem());
 
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, this::onPlayerReady);
         PacketAdapters.registerInbound(this::onInBoundPacket);
         PacketAdapters.registerInbound(this::onOutBoundPacket);
 
     }
+
+
     private boolean onInBoundPacket(PacketHandler handler,Packet packet){
         return packetHandling(false,handler,packet);
     }

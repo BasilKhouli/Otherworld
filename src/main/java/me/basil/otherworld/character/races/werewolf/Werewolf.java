@@ -4,6 +4,7 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.protocol.Packet;
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
@@ -13,6 +14,8 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.EntityStatType;
+import com.hypixel.hytale.server.core.modules.interaction.Interactions;
+import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -28,6 +31,8 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.lang.IO.print;
 
 public class Werewolf extends Race {
 
@@ -65,7 +70,7 @@ public class Werewolf extends Race {
 
         boolean dayTime = TimeOfDayUtil.isDayTime(store);
         boolean isFullMoon = timeResource.getMoonPhase() == 0 && !dayTime;
-        boolean shouldBeWerewolf = (isFullMoon != swapForm) || forceCurse;
+
         boolean wrongFrom = swapForm && !forceCurse;
 
         if (wrongFrom){
@@ -95,6 +100,7 @@ public class Werewolf extends Race {
             }
         }
 
+        boolean shouldBeWerewolf = (isFullMoon != swapForm) || forceCurse;
         if (shouldBeWerewolf) {
             speedModifiers.remove("Passive");
 
@@ -107,6 +113,8 @@ public class Werewolf extends Race {
                 speedModifiers.put("Curse",new GeneralModifier(1.20f,true ));
                 if (isFullMoon && !swapForm) { //plays on natural full Moon Transformation
                 }
+                Interactions interactions = commandBuffer.ensureAndGetComponent(ref, Interactions.getComponentType());
+                interactions.setInteractionId(InteractionType.Secondary, "TestWWInteraction");
 
             }
         }
@@ -119,6 +127,9 @@ public class Werewolf extends Race {
                 playerConfigData.setReputationData(reputationData);
                 speedModifiers.remove("Curse");
                 removeEffect("Curse",ref,commandBuffer,effectControllerComponent);
+
+                Interactions interactions = commandBuffer.ensureAndGetComponent(ref, Interactions.getComponentType());
+                commandBuffer.removeComponent(ref, Interactions.getComponentType());
             }
         }
 
