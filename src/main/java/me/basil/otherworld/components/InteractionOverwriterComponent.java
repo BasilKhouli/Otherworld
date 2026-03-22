@@ -18,17 +18,29 @@ public class InteractionOverwriterComponent implements Component<EntityStore> {
 
     private final Map<InteractionType, String> interactionOverwrites = new HashMap<>();
     private final Map<InteractionType, String> unarmedInteractionOverwrites = new HashMap<>();//
+    public boolean updated;
+    public boolean wasArmed;
+
+    public Map<InteractionType, String> getInteractions() {
+        return interactionOverwrites;
+    }
 
     public void setUnarmedInteractionOverwrite(InteractionType type, String interactionId) {
         unarmedInteractionOverwrites.put(type, interactionId);
+        updated = true;
     }
 
     public String getUnarmedInteractionOverwrite(InteractionType type) {
         return unarmedInteractionOverwrites.get(type);
     }
 
+    public Map<InteractionType, String> getUnarmedInteractions() {
+        return unarmedInteractionOverwrites;
+    }
+
     public void setInteractionOverwrite(InteractionType type, String interactionId) {
         interactionOverwrites.put(type, interactionId);
+        updated = true;
     }
 
     public String getInteractionOverwrite(InteractionType type) {

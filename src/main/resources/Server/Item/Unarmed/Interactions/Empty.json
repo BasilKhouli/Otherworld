@@ -28,6 +28,13 @@
         }
       ]
     },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Simple"
+        }
+      ]
+    },
     "Use": {
       "Settings": {
         "Adventure": {
@@ -91,10 +98,18 @@
         }
       ]
     },
-    "Secondary": {
+    "Ability1": {
       "Interactions": [
         {
           "Type": "Simple"
+        }
+      ]
+    },
+    "Ability2": {
+      "Interactions": [
+        {
+          "Type": "SendMessage",
+          "Key": "ab2"
         }
       ]
     }
